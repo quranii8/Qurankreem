@@ -221,23 +221,53 @@
         <p id="qibla-status" style="margin-top:10px; font-size:14px;">اضغط الزر لتفعيل الحركة</p>
     </div>
 </div>
-<div id="khatma-intro">
-    <div id="start-khatma-view">
-        <h3 style="color:var(--dark-teal);">مرحباً بك في تحدي الختمة 🏆</h3>
-        <p>هل أنت مستعد لبدء رحلة ختم القرآن الكريم في 30 يوماً؟</p>
-        <button class="modern-back-btn" style="background:var(--gold); color:white; padding:15px 40px; border-radius:30px; border:none; cursor:pointer; font-weight:bold;" onclick="initializeKhatma()">🚀 ابدأ التحدي الآن</button>
-    </div>
-
-    <div id="active-khatma-view" style="display:none;">
-        <h3 id="daily-task-title" style="color:var(--dark-teal);"></h3>
-        <p id="khatma-start-date" style="font-size:0.9rem; color:#666;"></p>
-        <div id="khatma-timer" style="background:#fef9e7; color:#d4af37; padding:10px; border-radius:10px; margin:15px 0; font-weight:bold; border:1px solid #f1c40f;">
-            ⏳ متبقي على نهاية اليوم: <span id="time-left">--:--:--</span>
+<div id="khatma-section" style="display:none; text-align:center; padding:20px;">
+    
+    <div class="daily-card shadow-lg" style="background: white; border-radius: 15px; padding: 20px; max-width: 800px; margin: auto; border: 1px solid #eee;">
+        <h2 style="color:var(--gold);">🏆 تحدي الختمة (30 يوم)</h2>
+        
+        <div class="progress-container" style="height: 20px; background:#eee; border-radius:10px; overflow:hidden; margin-top:10px;">
+            <div id="totalKhatmaBar" style="background: linear-gradient(90deg, #d4af37, #f1c40f); width: 0%; height:100%; transition: 0.5s;"></div>
         </div>
-        <button class="modern-back-btn" style="background:var(--dark-teal); color:var(--gold); padding:15px 40px; border-radius:30px; cursor:pointer; border:none;" onclick="startKhatmaReading()">📖 تابع القراءة الآن</button>
-        <br>
-        <button onclick="resetKhatma()" style="background:none; border:none; color:red; cursor:pointer; margin-top:10px; font-size:0.8rem; text-decoration:underline;">إعادة ضبط التحدي (حذف التقدم)</button>
+        <small id="total-percent-text" style="color:var(--dark-teal); font-weight:bold; display:block; margin-top:5px;">التقدم الكلي: 0%</small>
+
+        <hr style="margin:20px 0; opacity: 0.1;">
+
+        <div id="khatma-content-area">
+            
+            <div id="start-khatma-view" style="display:none;">
+                <h3 style="color:var(--dark-teal);">مرحباً بك في تحدي الختمة</h3>
+                <p>اضغط أدناه لبدء رحلة الختمة وتسجيل تاريخ اليوم</p>
+                <button class="modern-back-btn" style="background:var(--gold); color:white; padding:15px 40px; border-radius:30px; border:none; cursor:pointer; font-weight:bold; margin-top:10px;" onclick="initializeKhatma()">🚀 ابدأ التحدي الآن</button>
+            </div>
+
+            <div id="active-khatma-view" style="display:none;">
+                <h3 id="daily-task-title" style="color:var(--dark-teal);">ورد اليوم (الجزء 1)</h3>
+                <p id="khatma-start-date" style="font-size:0.9rem; color:#666;"></p>
+                <div id="khatma-timer" style="background:#fef9e7; color:#d4af37; padding:10px; border-radius:10px; margin:15px 0; font-weight:bold; border:1px solid #f1c40f;">
+                    ⏳ متبقي على نهاية اليوم: <span id="time-left">--:--</span>
+                </div>
+                <button class="modern-back-btn" style="background:var(--dark-teal); color:var(--gold); padding:15px 40px; border-radius:30px; cursor:pointer; border:none;" onclick="startKhatmaReading()">📖 تابع القراءة الآن</button>
+                <br>
+                <button onclick="resetKhatma()" style="background:none; border:none; color:#e74c3c; cursor:pointer; margin-top:15px; font-size:0.8rem; text-decoration:underline;">إعادة ضبط التحدي</button>
+            </div>
+
+            <div id="khatma-reading-area" style="display:none; margin-top:20px;">
+                <div class="progress-container" style="height: 8px; background:#ddd; border-radius:4px; margin-bottom:10px;">
+                    <div id="juzInnerBar" style="background: var(--dark-teal); width: 0%; height:100%; transition: 0.3s;"></div>
+                </div>
+                <div id="khatma-ayahs-display" style="background:#f9f9f9; padding:20px; border-radius:15px; font-size:1.6rem; line-height:2.8; text-align:right; border:1px solid #ddd; max-height:450px; overflow-y:auto; direction:rtl;">
+                    </div>
+                <div style="margin-top:15px;">
+                    <button onclick="markFullJuzDone()" style="background:#27ae60; color:white; border:none; padding:10px 20px; border-radius:5px; cursor:pointer;">✅ ختمت الجزء</button>
+                    <button onclick="closeKhatmaReading()" style="background:#95a5a6; color:white; border:none; padding:10px 20px; border-radius:5px; margin-right:5px; cursor:pointer;">إغلاق</button>
+                </div>
+            </div>
+
+        </div>
     </div>
+</div>
+
 </div>
 <div id="names-section" style="display:none; padding:20px; text-align:center;">
     <div class="section-header">
