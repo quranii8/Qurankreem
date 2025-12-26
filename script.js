@@ -4,6 +4,38 @@ const audio = document.getElementById('audioPlayer');
 const playBtn = document.getElementById('playBtn');
 const seekSlider = document.getElementById('seekSlider');
 const notifySound = document.getElementById('notificationSound');
+function switchMainTab(tabName) {
+    console.log("تم الضغط على قسم: " + tabName); // للتأكد في الـ Console
+
+    // 1. إخفاء جميع الأقسام يدوياً وبقوة
+    const sections = ['quran-section', 'azkar-section', 'sebha-section', 'prayer-section', 'qibla-section', 'khatma-section', 'names-section'];
+    sections.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.setAttribute('style', 'display: none !important');
+        }
+    });
+
+    // 2. إظهار القسم المطلوب
+    const targetId = tabName + '-section';
+    const targetEl = document.getElementById(targetId);
+    if (targetEl) {
+        targetEl.setAttribute('style', 'display: block !important');
+        console.log("تم إظهار: " + targetId);
+    } else {
+        console.error("لم يتم العثور على القسم: " + targetId);
+    }
+
+    // 3. تشغيل الدالة الخاصة بالقسم إذا وجدت
+    if (tabName === 'names') initNamesGrid();
+    if (tabName === 'khatma') updateKhatmaUI();
+    if (tabName === 'prayer') fetchPrayers();
+
+    // 4. إغلاق القائمة
+    if (document.getElementById('sideMenu')) {
+        document.getElementById('sideMenu').classList.remove('open');
+    }
+}
 
 // --- 1. القائمة الجانبية والإعدادات ---
 function toggleMenu() { document.getElementById('sideMenu').classList.toggle('open'); }
