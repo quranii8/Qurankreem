@@ -67,6 +67,7 @@
         <button id="prayerTab" onclick="switchMainTab('prayer')">مواقيت الصلاة</button>
 <button id="qiblaTab" onclick="switchMainTab('qibla')">اتجاه القبلة</button>
 <button id="khatmaTab" onclick="switchMainTab('khatma')">تحدي الختمة 🏆</button>
+<button id="namesTab" onclick="switchMainTab('names')">✨ أسماء الله الحسنى</button>
 
     </div>
 </header>
@@ -256,6 +257,30 @@
             <h3 id="daily-task-title" style="color:var(--dark-teal);">ورد اليوم (الجزء 1)</h3>
             <p style="color:#7f8c8d; margin-bottom:20px;">ابدأ وردك اليومي وسجل تقدمك آية بآية</p>
             <button class="modern-back-btn" style="background:var(--dark-teal); color:var(--gold); padding:15px 40px; font-size:1.1rem; border-radius:30px; cursor:pointer; border:none;" onclick="startKhatmaReading()">📖 ابدأ القراءة الآن</button>
+        </div>
+    </div>
+</div>
+<div id="names-section" style="display:none; padding:20px; text-align:center;">
+    <div class="section-header">
+        <h2 style="color:var(--gold);">✨ أسماء الله الحسنى ✨</h2>
+        <p style="color:var(--dark-teal);">وَلِلَّهِ الْأَسْمَاءُ الْحُسْنَىٰ فَادْعُوهُ بِهَا</p>
+    </div>
+    
+    <div id="names-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 15px; margin-top: 20px;">
+        </div>
+
+    <div id="name-details-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:1000; justify-content:center; align-items:center; padding:20px;">
+        <div style="background:white; border-radius:20px; padding:30px; max-width:500px; width:100%; position:relative; text-align:right; border:3px solid var(--gold);">
+            <button onclick="closeNameDetails()" style="position:absolute; top:10px; left:10px; border:none; background:none; font-size:25px; cursor:pointer;">✖</button>
+            <h1 id="modal-name-title" style="color:var(--gold); text-align:center; font-size:3rem; margin-bottom:10px;"></h1>
+            <hr>
+            <div style="margin-top:20px;">
+                <h4 style="color:var(--dark-teal);">📖 المعنى والتفسير:</h4>
+                <p id="modal-name-desc" style="line-height:1.6; font-size:1.1rem;"></p>
+                <br>
+                <h4 style="color:var(--dark-teal);">🔢 عدد المرات في القرآن:</h4>
+                <p id="modal-name-count" style="font-weight:bold;"></p>
+            </div>
         </div>
     </div>
 </div>
