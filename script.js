@@ -44,25 +44,36 @@ function filterSurahs() {
 }
 
 function openSurah(id, name) {
-    currentSurahId = id;
-    document.getElementById('sideMenu').classList.remove('open');
+    if(typeof currentSurahId !== 'undefined') currentSurahId = id;
     
-    // إخفاء كل واجهات القائمة (المصحف والفهرس)
-    if(document.getElementById('main-view')) document.getElementById('main-view').style.display = 'none';
-    if(document.getElementById('full-quran-view')) document.getElementById('full-quran-view').style.display = 'none';
-    if(document.getElementById('topics-view')) document.getElementById('topics-view').style.display = 'none';
-    
-    // إظهار واجهة القارئ
-    document.getElementById('quran-view').style.display = 'block';
-    document.getElementById('current-surah-title').innerText = name;
-    
-    updateAudioSource();
-    fetch(`https://api.alquran.cloud/v1/surah/${id}`).then(res => res.json()).then(data => {
-        document.getElementById('ayahsContainer').innerHTML = data.data.ayahs.map(a => 
-            `${a.text} <span style="color:var(--gold); font-size: 1.1rem;">(${a.numberInSurah})</span>`
-        ).join(' ');
+    // إخفاء الواجهات الموجودة (تأكد من وجود هذه الـ IDs في الـ HTML)
+    const sections = ['full-quran-view', 'topics-view', 'main-view'];
+    sections.forEach(s => {
+        const el = document.getElementById(s);
+        if(el) el.style.display = 'none';
     });
+
+    const qv = document.getElementById('quran-view');
+    if(qv) {
+        qv.style.display = 'block';
+        const title = document.getElementById('current-surah-title');
+        if(title) title.innerText = name;
+        
+        if(typeof updateAudioSource === 'function') updateAudioSource();
+        
+        fetch(`https://api.alquran.cloud/v1/surah/${id}`)
+            .then(res => res.json())
+            .then(data => {
+                const container = document.getElementById('ayahsContainer');
+                if(container) {
+                    container.innerHTML = data.data.ayahs.map(a => 
+                        `${a.text} <span class="ayah-num">(${a.numberInSurah})</span>`
+                    ).join(' ');
+                }
+            }).catch(err => console.log("خطأ في التحميل"));
+    }
 }
+
 
 
 function showMain() { 
