@@ -225,3 +225,102 @@ body.dark-mode .p-card b { color: white; }
     70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(201, 176, 122, 0); }
     100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(201, 176, 122, 0); }
 }
+.daily-card {
+    background: white;
+    padding: 25px;
+    border-radius: 20px;
+    margin: 20px auto;
+    max-width: 90%;
+    border: 2px solid var(--gold);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+    text-align: center;
+    transition: 0.3s;
+}
+.daily-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 15px;
+    color: var(--dark-teal);
+    font-weight: bold;
+    font-size: 1.2rem;
+}
+.daily-text {
+    font-size: 1.4rem;
+    line-height: 2;
+    color: var(--dark-teal);
+    margin-bottom: 15px;
+    font-family: 'Amiri', serif;
+}
+.daily-ref {
+    display: block;
+    color: var(--gold);
+    font-weight: bold;
+    margin-bottom: 15px;
+}
+.copy-btn {
+    background: var(--dark-teal);
+    color: var(--gold);
+    border: 1px solid var(--gold);
+    padding: 5px 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: 'Amiri', serif;
+}
+/* دعم الوضع المظلم */
+body.dark-mode .daily-card {
+    background: #1a1a1a;
+    border-color: var(--gold);
+}
+body.dark-mode .daily-text {
+    color: #e0e0e0;
+}
+/* تنسيق زر تنبيهات الأذان */
+#notifBtn {
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+#notifBtn.enabled {
+    background: var(--gold);
+    color: var(--dark-teal);
+    box-shadow: 0 0 10px var(--gold);
+}
+/* تنسيق الزر المنسدل */
+.quran-menu-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: white;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px rgba(0,0,0,0.2);
+    z-index: 1000;
+    border-radius: 12px;
+    top: 100%;
+    right: 0;
+    overflow: hidden;
+}
+
+.dropdown-content a {
+    color: var(--dark-teal);
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+    text-align: right;
+    font-size: 14px;
+    border-bottom: 1px solid #eee;
+    transition: 0.3s;
+}
+
+.dropdown-content a:hover {
+    background-color: #f9f4e8;
+    color: var(--gold);
+}
+
+.show-dropdown {
+    display: block !important;
+}
