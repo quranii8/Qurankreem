@@ -911,4 +911,23 @@ function closeNameDetails() {
 // تعديل دالة السويتش لتشغيل القسم
 // تأكد من إضافة 'names-section' لمصفوفة الأقسام داخل دالة switchMainTab
 
+function switchMainTab(t) {
+    // 1. تحديث حالة الأزرار
+    document.querySelectorAll('.main-nav button').forEach(b => b.classList.remove('active'));
+    document.getElementById(t + 'Tab')?.classList.add('active');
+
+    // 2. قائمة الأقسام (تأكد أن names-section موجود في الـ HTML)
+    const sections = ['quran-section', 'azkar-section', 'sebha-section', 'prayer-section', 'qibla-section', 'khatma-section', 'names-section'];
+
+    // 3. إظهار القسم المطلوب وإخفاء البقية
+    sections.forEach(s => {
+        const el = document.getElementById(s);
+        if (el) el.style.display = (s === t + '-section') ? 'block' : 'none';
+    });
+
+    // 4. تشغيل وظيفة أسماء الله الحسنى فوراً
+    if (t === 'names') {
+        initNamesGrid();
+    }
+}
 
