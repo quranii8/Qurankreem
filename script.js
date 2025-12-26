@@ -705,4 +705,43 @@ function trackReadingProgress(ayahNumber) {
 
 function saveKhatma() {
     localStorage.setItem('khatmaProgress', JSON.stringify(khatmaData));
+}function switchMainTab(t) {
+    // 1. تحديث شكل الأزرار العلوية (إضافة اللون الأخضر للزر النشط)
+    document.querySelectorAll('.main-nav button').forEach(b => b.classList.remove('active'));
+    const activeTab = document.getElementById(t + 'Tab');
+    if (activeTab) activeTab.classList.add('active');
+
+    // 2. مصفوفة الأقسام شاملة قسم الختمة الجديد
+    const allSections = [
+        'quran-section', 
+        'azkar-section', 
+        'sebha-section', 
+        'prayer-section', 
+        'qibla-section',
+        'khatma-section' // الإضافة هنا
+    ];
+
+    // 3. إظهار القسم المطلوب وإخفاء البقية
+    allSections.forEach(s => {
+        const el = document.getElementById(s);
+        if (el) {
+            el.style.display = s === (t + '-section') ? 'block' : 'none';
+        }
+    });
+
+    // 4. تشغيل وظيفة تحديث البار فور فتح القسم
+    if (t === 'khatma' && typeof updateKhatmaUI === "function") {
+        updateKhatmaUI();
+    }
+
+    // 5. منطق قسم القرآن الخاص (لضمان رجوع الفهرس لحالته الطبيعية)
+    if (t === 'quran') {
+        const fullView = document.getElementById('full-quran-view');
+        const topicsView = document.getElementById('topics-view');
+        const quranView = document.getElementById('quran-view');
+        if (fullView) fullView.style.display = 'block';
+        if (topicsView) topicsView.style.display = 'none';
+        if (quranView) quranView.style.display = 'none';
+    }
 }
+
