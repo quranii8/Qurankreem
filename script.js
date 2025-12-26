@@ -268,13 +268,6 @@ function resetSebhaAutomated() {
 setInterval(updateCountdown, 1000);
 
 // --- 6. الوضع الداكن والخط والتبديل ---
-function switchMainTab(t) {
-    document.querySelectorAll('.main-nav button').forEach(b => b.classList.remove('active'));
-    document.getElementById(t + 'Tab').classList.add('active');
-    ['quran-section', 'azkar-section', 'sebha-section'].forEach(s => { 
-        document.getElementById(s).style.display = s.startsWith(t) ? 'block' : 'none'; 
-    });
-}
 
 function toggleDarkMode() { document.body.classList.toggle('dark-mode'); }
 function changeFontSize(d) { 
@@ -425,20 +418,7 @@ function handleCompass(e) {
     }
 }
 
-// دالة التبديل الشاملة (تأكد أنها الوحيدة في الملف)
-function switchMainTab(t) {
-    document.querySelectorAll('.main-nav button').forEach(b => b.classList.remove('active'));
-    document.getElementById(t + 'Tab')?.classList.add('active');
-
-    const allSections = ['quran-section', 'azkar-section', 'sebha-section', 'prayer-section', 'qibla-section'];
-    allSections.forEach(s => {
-        const el = document.getElementById(s);
-        if (el) el.style.display = s.startsWith(t) ? 'block' : 'none';
-    });
-    
-    if(t === 'qibla') getQibla();
-    if(t === 'prayer') fetchPrayers();
-}
+// دالة التبديل الشاملة (تأكد أنها الوحيدة في المل
 // دالة جلب آية اليوم بناءً على تاريخ اليوم
 async function loadDailyAyah() {
     try {
@@ -613,88 +593,6 @@ function showMain() {
     if(audio) audio.pause(); 
     if(playBtn) playBtn.innerText = "▷";
 }
-function switchMainTab(t) {
-    // 1. تحديث شكل الأزرار في القائمة العلوية
-    document.querySelectorAll('.main-nav button').forEach(b => {
-        b.classList.remove('active');
-    });
-    
-    // تأكد أن الـ ID الخاص بالزر يطابق (اسم القسم + Tab)
-    const activeTab = document.getElementById(t + 'Tab');
-    if (activeTab) {
-        activeTab.classList.add('active');
-    }
-
-    // 2. مصفوفة بكل الأقسام الرئيسية لضمان إخفاء غير المطلوب
-    const allSections = [
-        'quran-section', 
-        'azkar-section', 
-        'sebha-section', 
-        'prayer-section', 
-        'qibla-section'
-    ];
-
-    allSections.forEach(s => {
-        const el = document.getElementById(s);
-        if (el) {
-            // إظهار القسم إذا كان يبدأ بنفس اسم التاب المختار، وإخفاء الباقي
-            el.style.display = s.startsWith(t) ? 'block' : 'none';
-        }
-    });
-
-    // 3. تشغيل الدوال الخاصة بالأقسام التي تحتاج تحديث لحظي عند الفتح
-    if (t === 'qibla') {
-        if (typeof getQibla === 'function') {
-            getQibla(); // جلب إحداثيات القبلة
-        }
-    }
-    
-    if (t === 'prayer') {
-        if (typeof fetchPrayers === 'function') {
-            fetchPrayers(); // تحديث مواقيت الصلاة والعداد التنازلي
-        }
-    }
-
-    // 4. ملاحظة هامة للفهرس: عند الانتقال لقسم القرآن من زر خارجي
-    // نضمن دائماً ظهور المصحف الكامل وإخفاء الفهرس والقارئ كحالة افتراضية
-    if (t === 'quran') {
-        const fullView = document.getElementById('full-quran-view');
-        const topicsView = document.getElementById('topics-view');
-        const quranView = document.getElementById('quran-view');
-
-        if (fullView) fullView.style.display = 'block';
-        if (topicsView) topicsView.style.display = 'none';
-        if (quranView) quranView.style.display = 'none';
-    }
-}
-function switchMainTab(t) {
-    // 1. تغيير حالة الأزرار العلوية
-    document.querySelectorAll('.main-nav button').forEach(b => b.classList.remove('active'));
-    document.getElementById(t + 'Tab')?.classList.add('active');
-
-    // 2. قائمة الأقسام مع إضافة قسم الختمة الجديد
-    const allSections = ['quran-section', 'azkar-section', 'sebha-section', 'prayer-section', 'qibla-section', 'khatma-section'];
-
-    // 3. التبديل بين الأقسام
-    allSections.forEach(s => {
-        const el = document.getElementById(s);
-        if (el) el.style.display = s.startsWith(t) ? 'block' : 'none';
-    });
-
-    // 4. تشغيل وظائف الأقسام الخاصة
-    if (t === 'qibla') getQibla();
-    if (t === 'prayer') fetchPrayers();
-    if (t === 'khatma' && typeof updateKhatmaUI === 'function') updateKhatmaUI();
-    
-    // 5. تصفير واجهة القرآن عند العودة لها
-    if (t === 'quran') {
-        document.getElementById('full-quran-view').style.display = 'block';
-        document.getElementById('topics-view').style.display = 'none';
-        document.getElementById('quran-view').style.display = 'none';
-    }
-}
-// بيانات الختمة
-// 1. إدارة بيانات الختمة في الذاكرة
 // 1. نظام إدارة البيانات الجديد
 let khatmaData = JSON.parse(localStorage.getItem('khatmaProgress')) || null;
 
@@ -897,36 +795,13 @@ function showNameDetails(index) {
 function closeNameDetails() {
     document.getElementById('name-details-modal').style.display = 'none';
 }
-
-// تعديل دالة السويتش لتشغيل القسم
-// تأكد من إضافة 'names-section' لمصفوفة الأقسام داخل دالة switchMainTab
-
-function switchMainTab(t) {
-    // 1. تحديث حالة الأزرار
-    document.querySelectorAll('.main-nav button').forEach(b => b.classList.remove('active'));
-    document.getElementById(t + 'Tab')?.classList.add('active');
-
-    // 2. قائمة الأقسام (تأكد أن names-section موجود في الـ HTML)
-    const sections = ['quran-section', 'azkar-section', 'sebha-section', 'prayer-section', 'qibla-section', 'khatma-section', 'names-section'];
-
-    // 3. إظهار القسم المطلوب وإخفاء البقية
-    sections.forEach(s => {
-        const el = document.getElementById(s);
-        if (el) el.style.display = (s === t + '-section') ? 'block' : 'none';
-    });
-
-    // 4. تشغيل وظيفة أسماء الله الحسنى فوراً
-    if (t === 'names') {
-        initNamesGrid();
-    }
-}
 function switchMainTab(t) {
     // 1. تحديث شكل الأزرار (Active State)
     document.querySelectorAll('.main-nav button').forEach(b => b.classList.remove('active'));
     const activeBtn = document.getElementById(t + 'Tab');
     if (activeBtn) activeBtn.classList.add('active');
 
-    // 2. قائمة بجميع الأقسام الموجودة في موقعك
+    // 2. مصفوفة الأقسام (تأكد أن الـ IDs في الـ HTML تطابق هذه الأسماء)
     const allSections = [
         'quran-section', 
         'azkar-section', 
@@ -937,7 +812,7 @@ function switchMainTab(t) {
         'names-section'
     ];
 
-    // 3. إظهار القسم المختار وإخفاء البقية فوراً
+    // 3. التنقل الفوري وإخفاء الأقسام غير النشطة
     allSections.forEach(s => {
         const el = document.getElementById(s);
         if (el) {
@@ -945,42 +820,42 @@ function switchMainTab(t) {
         }
     });
 
-    // 4. تشغيل "المحركات" الخاصة بكل قسم (حل مشاكل التحديث)
-    
-    // أ- قسم أسماء الله الحسنى: بناء الشبكة فوراً
-    if (t === 'names') {
-        if (typeof initNamesGrid === 'function') initNamesGrid();
-    }
-    
-    // ب- قسم مواقيت الصلاة: طلب الموقع وتحديث الأوقات تلقائياً
-    if (t === 'prayer') {
-        if (typeof fetchPrayers === 'function') {
-            fetchPrayers(); // هذا السطر هو الذي يظهر طلب "السماح بالموقع"
+    // 4. تشغيل "المحركات الداخلية" لكل قسم لضمان تحديث البيانات
+    try {
+        if (t === 'quran') {
+            // إعادة ضبط واجهة القرآن للحالة الرئيسية (المصحف الكامل)
+            if (typeof showMain === 'function') showMain();
         }
-    }
-
-    // ج- قسم القبلة: تشغيل البوصلة وطلب الإذن
-    if (t === 'qibla') {
-        if (typeof getQibla === 'function') getQibla();
-    }
-
-    // د- قسم الختمة: تحديث البارات والعداد التنازلي والواجهة (ابدأ أو تابع)
-    if (t === 'khatma') {
-        if (typeof updateKhatmaUI === 'function') {
-            updateKhatmaUI();
+        
+        if (t === 'khatma') {
+            // تشغيل محرك الختمة (عرض الورد، حفظ التقدم، العداد التنازلي)
+            if (typeof updateKhatmaUI === 'function') updateKhatmaUI();
         }
-    }
 
-    // هـ- قسم القرآن: إعادة الضبط للواجهة الرئيسية عند الدخول
-    if (t === 'quran') {
-        const fullView = document.getElementById('full-quran-view');
-        if (fullView) fullView.style.display = 'block';
-        
-        const quranView = document.getElementById('quran-view');
-        if (quranView) quranView.style.display = 'none';
-        
-        const searchBox = document.querySelector('.search-box');
-        if (searchBox) searchBox.style.display = 'block';
+        if (t === 'names') {
+            // بناء شبكة أسماء الله الحسنى فوراً عند الفتح
+            if (typeof initNamesGrid === 'function') initNamesGrid();
+        }
+
+        if (t === 'prayer') {
+            // طلب الموقع وتحديث مواقيت الصلاة والمنبهات
+            if (typeof fetchPrayers === 'function') fetchPrayers();
+        }
+
+        if (t === 'qibla') {
+            // تشغيل حسابات القبلة
+            if (typeof getQibla === 'function') getQibla();
+        }
+
+        // إغلاق القائمة الجانبية تلقائياً بعد الاختيار لراحة المستخدم
+        if (document.getElementById('sideMenu')?.classList.contains('open')) {
+            toggleMenu();
+        }
+
+    } catch (error) {
+        console.warn("إشعار: القسم يحتاج لتحميل البيانات أو وجود دالة مفقودة:", error);
     }
 }
 
+// تعديل دالة السويتش لتشغيل القسم
+// تأكد من إضافة 'names-section' لمصفوفة الأقسام داخل دالة switchMainTab
