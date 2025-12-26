@@ -694,79 +694,93 @@ function switchMainTab(t) {
     }
 }
 // بيانات الختمة
+// 1. إدارة بيانات الختمة في الذاكرة
 let khatmaData = JSON.parse(localStorage.getItem('khatmaProgress')) || {
     currentJuz: 1,
-    currentAyahIndex: 0, // لحفظ التقدم داخل الجزء
-    completedDays: [],
+    lastAyahIndex: 0,
     lastUpdate: new Date().toDateString()
 };
 
-function updateKhatmaUI() {
-    const now = new Date();
-    const today = now.toDateString();
+let currentJuzAyahs = [];
 
-    // فحص إذا مر يوم جديد (الساعة 12 ليلاً)
-    if (khatmaData.lastUpdate !== today) {
-        // إذا لم يكمل الجزء السابق، يظهر في المتراكم
-        checkBacklog();
-        khatmaData.lastUpdate = today;
-        saveKhatma();
-    }
+// 2. دالة بدء القراءة وجلب الجزء
+async function startKhatmaReading() {
+    document.getElementById('khatma-intro').style.display = 'none';
+    document.getElementById('khatma-reading-area').style.display = 'block';
+    
+    const juzId = khatmaData.currentJuz;
+    const displayArea = document.getElementById('khatma-ayahs-display');
+    displayArea.innerHTML = "<p style='text-align:center;'>جاري جلب وردك اليومي...</p>";
 
-    // حساب النسب
-    const totalProgress = ((khatmaData.currentJuz - 1) / 30) * 100;
-    document.getElementById('totalKhatmaBar').style.width = totalProgress + "%";
-    document.getElementById('total-percent-text').innerText = `التقدم الكلي: ${Math.round(totalProgress)}%`;
-    
-    // تحديث ورد اليوم
-    document.getElementById('daily-task-title').innerText = `ورد اليوم (الجزء ${khatmaData.currentJuz})`;
-    
-    // تغيير لون البار إذا اكتمل الورد
-    if (totalProgress >= 100) {
-        document.getElementById('totalKhatmaBar').style.background = "var(--success)";
-    }
-}
-
-// دالة لحفظ التقدم عند قراءة آية
-function trackReadingProgress(ayahNumber) {
-    // منطق برمجي يربط رقم الآية بمقدار التقدم في الجزء
-    // سيتم استدعاء هذه الدالة داخل openSurah
-}
-
-function saveKhatma() {
-    localStorage.setItem('khatmaProgress', JSON.stringify(khatmaData));
-}
-function openDailyJuz() {
-    // خريطة بسيطة لبدايات الأجزاء (رقم السورة لكل جزء)
-    const juzStartSurahs = {
-        1: 1,  2: 2,  3: 2,  4: 3,  5: 4,  6: 4,  7: 5,  8: 6,  9: 7,  10: 8,
-        11: 9, 12: 11, 13: 12, 14: 15, 15: 17, 16: 18, 17: 21, 18: 23, 19: 25, 20: 27,
-        21: 29, 22: 33, 23: 36, 24: 39, 25: 41, 26: 46, 27: 51, 28: 58, 29: 67, 30: 78
-    };
-
-    const targetSurahId = juzStartSurahs[khatmaData.currentJuz] || 1;
-    const surahName = allSurahs.find(s => s.number == targetSurahId)?.name || "القرآن الكريم";
-    
-    // الانتقال لقسم القرآن وفتح السورة المطلوبة
-    switchMainTab('quran');
-    openSurah(targetSurahId, surahName);
-}
-function checkKhatmaProgress(surahId) {
-    // مثال: إذا قرأ المستخدم سورة البقرة (2) وهو في الجزء الأول، نعتبره تقدم
-    // يمكنك تطوير هذا المنطق لاحقاً ليكون أدق (بالآيات)
-    
-    // تحديث بسيط للبار اليومي للتجربة (يزيد 10% مع كل سورة تفتحها)
-    let dailyBar = document.getElementById('dailyKhatmaBar');
-    let currentWidth = parseFloat(dailyBar.style.width) || 0;
-    
-    if (currentWidth < 100) {
-        let newWidth = currentWidth + 12.5; // تقسيم الجزء على معدل 8 سور تقريباً
-        dailyBar.style.width = newWidth + "%";
+    try {
+        const res = await fetch(`https://api.alquran.cloud/v1/juz/${juzId}/quran-simple`);
+        const data = await res.json();
+        currentJuzAyahs = data.data.ayahs;
         
-        if (newWidth >= 100) {
-            dailyBar.style.background = "#27ae60"; // أخضر عند الإكمال
-            document.getElementById('daily-remaining').innerText = "تهانينا! أكملت ورد اليوم 🎉";
+        displayArea.innerHTML = currentJuzAyahs.map((a, index) => {
+            return `${a.text} <span class="ayah-mark" id="mark-${index}" onclick="saveCheckpoint(${index})" style="color:var(--gold); cursor:pointer; font-weight:bold; border:1px solid #ddd; padding:2px 5px; border-radius:5px; margin:0 5px; display:inline-block;">(${a.numberInSurah})</span>`;
+        }).join(' ');
+
+        // استعادة آخر نقطة توقف
+        if(khatmaData.lastAyahIndex > 0) {
+            saveCheckpoint(khatmaData.lastAyahIndex);
+            // تمرير التصفح تلقائياً لآخر آية
+            setTimeout(() => {
+                const lastMark = document.getElementById(`mark-${khatmaData.lastAyahIndex}`);
+                if(lastMark) lastMark.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 500);
         }
+    } catch (e) {
+        displayArea.innerText = "تعذر تحميل الورد، تأكد من الإنترنت.";
     }
 }
+
+// 3. حفظ "علامة الوصول" وتحديث البار الداخلي
+function saveCheckpoint(index) {
+    const totalAyahs = currentJuzAyahs.length;
+    const progress = Math.round(((index + 1) / totalAyahs) * 100);
+    
+    document.getElementById('juzInnerBar').style.width = progress + "%";
+    document.getElementById('juz-progress-text').innerText = `تقدمك في هذا الجزء: ${progress}%`;
+    
+    khatmaData.lastAyahIndex = index;
+    localStorage.setItem('khatmaProgress', JSON.stringify(khatmaData));
+
+    // تمييز الأرقام (تلوين ما تم قراءته)
+    const marks = document.querySelectorAll('.ayah-mark');
+    marks.forEach((m, i) => {
+        if(i <= index) {
+            m.style.background = "var(--gold)";
+            m.style.color = "white";
+        } else {
+            m.style.background = "transparent";
+            m.style.color = "var(--gold)";
+        }
+    });
+}
+
+// 4. إنهاء الجزء كاملاً
+function markFullJuzDone() {
+    if(confirm("هل أنهيت قراءة الجزء بالكامل؟ سيتم نقلك للجزء التالي.")) {
+        khatmaData.currentJuz++;
+        khatmaData.lastAyahIndex = 0;
+        localStorage.setItem('khatmaProgress', JSON.stringify(khatmaData));
+        updateKhatmaUI();
+        closeKhatmaReading();
+    }
+}
+
+function closeKhatmaReading() {
+    document.getElementById('khatma-intro').style.display = 'block';
+    document.getElementById('khatma-reading-area').style.display = 'none';
+}
+
+// 5. تحديث الواجهة الرئيسية (البار الكلي)
+function updateKhatmaUI() {
+    const totalPercent = Math.round(((khatmaData.currentJuz - 1) / 30) * 100);
+    document.getElementById('totalKhatmaBar').style.width = totalPercent + "%";
+    document.getElementById('total-percent-text').innerText = `التقدم الكلي: ${totalPercent}%`;
+    document.getElementById('daily-task-title').innerText = `ورد اليوم (الجزء ${khatmaData.currentJuz})`;
+}
+
 
