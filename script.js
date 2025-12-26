@@ -44,14 +44,24 @@ function filterSurahs() {
 function openSurah(id, name) {
     currentSurahId = id;
     document.getElementById('sideMenu').classList.remove('open');
-    document.getElementById('main-view').style.display = 'none';
+    
+    // إخفاء كل واجهات القائمة (المصحف والفهرس)
+    if(document.getElementById('main-view')) document.getElementById('main-view').style.display = 'none';
+    if(document.getElementById('full-quran-view')) document.getElementById('full-quran-view').style.display = 'none';
+    if(document.getElementById('topics-view')) document.getElementById('topics-view').style.display = 'none';
+    
+    // إظهار واجهة القارئ
     document.getElementById('quran-view').style.display = 'block';
     document.getElementById('current-surah-title').innerText = name;
+    
     updateAudioSource();
     fetch(`https://api.alquran.cloud/v1/surah/${id}`).then(res => res.json()).then(data => {
-        document.getElementById('ayahsContainer').innerHTML = data.data.ayahs.map(a => `${a.text} <span style="color:var(--gold); font-size: 1.1rem;">(${a.numberInSurah})</span>`).join(' ');
+        document.getElementById('ayahsContainer').innerHTML = data.data.ayahs.map(a => 
+            `${a.text} <span style="color:var(--gold); font-size: 1.1rem;">(${a.numberInSurah})</span>`
+        ).join(' ');
     });
 }
+
 
 function showMain() { 
     document.getElementById('main-view').style.display = 'block'; 
