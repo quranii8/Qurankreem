@@ -633,14 +633,8 @@ function updateKhatmaUI() {
         // تشغيل العداد التنازلي لنهاية اليوم
         if (typeof startKhatmaTimer === 'function') {
             startKhatmaTimer();
-        }
+            }
     }
-} // إغلاق الدالة بشكل صحيح
-
-    }
-}
-
-}
 
 // 2. دالة البداية لأول مرة
 function initializeKhatma() {
