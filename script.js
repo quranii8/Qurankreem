@@ -927,4 +927,23 @@ window.requestSystemNotify = function() {
         }
     });
 };
+// هذا الكود يوضع في نهاية السكريبت
+getRedirectResult(auth).then(async (result) => {
+    if (result && result.user) {
+        const user = result.user;
+        const localData = localStorage.getItem('khatmaProgress');
+        
+        if (localData) {
+            // حفظ البيانات في السحابة فور العودة بنجاح
+            await setDoc(doc(db, "users", user.uid), {
+                khatma: JSON.parse(localData),
+                displayName: user.displayName,
+                lastSync: new Date()
+            });
+            alert("تمت المزامنة بنجاح يا " + user.displayName + " ✅");
+        }
+    }
+}).catch((error) => {
+    console.error("خطأ في المزامنة:", error);
+});
 
