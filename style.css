@@ -367,4 +367,15 @@ body.dark-mode #juz-progress-text,
 body.dark-mode #total-percent-text {
     color: #b0b0b0 !important;
 }
+body.dark-mode .name-card {
+    background-color: #1a1a1a !important;
+    border-color: var(--gold) !important;
+}
+body.dark-mode .name-card h2 {
+    color: var(--gold) !important;
+}
+body.dark-mode #name-details-modal div {
+    background-color: #262626 !important;
+    color: white !important;
+}
 
