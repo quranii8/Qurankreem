@@ -558,6 +558,11 @@ function selectQuranOption(option) {
         fullView.style.display = 'none';
         topicsView.style.display = 'block';
         quranView.style.display = 'none';
+        if (option === 'quran') {
+    // ... الكود الموجود لديك ...
+    document.querySelector('.search-box').style.display = 'block'; // إعادة إظهار البحث
+    if (document.getElementById('backToTopicsContainer')) {
+        document.getElementById('backToTopicsContainer').style.display = 'none';
     }
 }
 
@@ -566,12 +571,36 @@ function showTopicSurahs(title, surahNumbers) {
     document.getElementById('full-quran-view').style.display = 'block';
     document.getElementById('topics-view').style.display = 'none';
     
-    // فلترة السور (تأكد أن allSurahs محملة)
+    // إخفاء مربع البحث عند الدخول لقسم معين
+    const searchBox = document.querySelector('.search-box');
+    if (searchBox) searchBox.style.display = 'none';
+    
+    // إظهار زر العودة للأقسام
+    let backBtn = document.getElementById('backToTopicsContainer');
+    if (!backBtn) {
+        // إذا لم يكن الزر موجوداً، نقوم بإنشائه برمجياً ووضعه مكان البحث
+        const container = document.createElement('div');
+        container.id = 'backToTopicsContainer';
+        container.style.textAlign = 'center';
+        container.style.margin = '20px 0';
+        container.innerHTML = `<button class="modern-back-btn" onclick="returnToAllTopics()">↩ العودة لجميع الأقسام</button>`;
+        searchBox.parentNode.insertBefore(container, searchBox.nextSibling);
+    } else {
+        backBtn.style.display = 'block';
+    }
+    
     const filtered = allSurahs.filter(s => surahNumbers.includes(parseInt(s.number)));
     displaySurahs(filtered);
-    
-    document.getElementById('searchInput').value = "قسم: " + title;
 }
+
+// دالة العودة التي تعيد إظهار البحث وإخفاء الزر
+function returnToAllTopics() {
+    document.getElementById('full-quran-view').style.display = 'none';
+    document.getElementById('topics-view').style.display = 'block';
+    document.getElementById('backToTopicsContainer').style.display = 'none';
+    document.querySelector('.search-box').style.display = 'block';
+}
+
 
 // 3. تعديل دالة العودية (showMain)
 function showMain() { 
