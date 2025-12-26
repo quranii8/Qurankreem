@@ -882,13 +882,12 @@ window.onclick = function(event) {
     }
 }
 // دالة تسجيل الدخول والمزامنة
-window.loginAndSync = async function() {
-    try {
         // دالة تسجيل الدخول والمزامنة باستخدام التحويل (Redirect)
 window.loginAndSync = function() {
-    // هذه الطريقة لا يحجبها المتصفح لأنها تفتح في نفس الصفحة
+    // هذا السطر فقط هو ما تحتاجه لفتح صفحة جوجل بدون مشاكل
     signInWithRedirect(auth, provider);
 };
+
 
 // هذا الكود يعمل تلقائياً عند العودة من صفحة جوجل للموقع
 import { getRedirectResult } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
