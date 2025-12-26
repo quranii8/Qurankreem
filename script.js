@@ -549,4 +549,53 @@ window.onclick = function(event) {
         }
     }
 }
+// دالة عرض سور معينة بناءً على الموضوع المختبر
+function showTopicSurahs(title, surahNumbers) {
+    // 1. العودة لواجهة السور
+    document.getElementById('surahList').parentElement.style.display = 'block';
+    document.getElementById('topics-view').style.display = 'none';
+
+    // 2. تحديث عنوان البحث ليعرف المستخدم ماذا يرى
+    document.getElementById('surahSearch').value = "قسم: " + title;
+
+    // 3. فلترة القائمة بناءً على أرقام السور الممررة
+    const filtered = allSurahs.filter(s => surahNumbers.includes(s.number));
+    displaySurahs(filtered);
+    
+    // 4. إضافة زر صغير لمسح الفلترة والعودة للكل
+    if(!document.getElementById('clearFilter')) {
+        const btn = document.createElement('button');
+        btn.id = 'clearFilter';
+        btn.innerText = 'عرض كل السور';
+        btn.onclick = () => { 
+            displaySurahs(allSurahs); 
+            document.getElementById('surahSearch').value = '';
+            btn.remove();
+        };
+        btn.style = "display:block; margin:10px auto; background:var(--dark-teal); color:var(--gold); border:1px solid var(--gold); padding:5px 10px; border-radius:8px; cursor:pointer;";
+        document.getElementById('surahList').before(btn);
+    }
+}
+
+// تعديل الدالة الأساسية لضمان عمل التبديل
+function selectQuranOption(option) {
+    document.getElementById("quranDropdown").classList.remove("show-dropdown");
+    switchMainTab('quran');
+
+    const fullView = document.getElementById('full-quran-view');
+    const topicsView = document.getElementById('topics-view');
+    const clearBtn = document.getElementById('clearFilter');
+
+    if (option === 'quran') {
+        fullView.style.display = 'block';
+        topicsView.style.display = 'none';
+        if(clearBtn) clearBtn.remove(); // مسح الفلترة عند العودة للكل
+        displaySurahs(allSurahs); 
+        document.getElementById('surahSearch').value = '';
+        showMain();
+    } else if (option === 'topics') {
+        fullView.style.display = 'none';
+        topicsView.style.display = 'block';
+    }
+}
 
