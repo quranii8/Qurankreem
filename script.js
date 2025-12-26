@@ -24,15 +24,17 @@ fetch('https://api.alquran.cloud/v1/surah').then(res => res.json()).then(data =>
     allSurahs = data.data; 
     displaySurahs(allSurahs); 
 });
-
 function displaySurahs(surahs) { 
     const list = document.getElementById('surahList');
-    if(!list) return;
-    list.innerHTML = surahs.map(s => `
-        <div class="surah-card" onclick="openSurah(${s.number}, '${s.name}')" style="cursor:pointer;">
-            ${s.number}. ${s.name}
-        </div>
-    `).join(''); 
+    if(!list) return; // هذا السطر يمنع التعليق إذا لم يجد القائمة
+    
+    let html = '';
+    surahs.forEach(s => {
+        html += `<div class="surah-card" onclick="openSurah(${s.number}, '${s.name}')" style="cursor:pointer;">
+                    ${s.number}. ${s.name}
+                 </div>`;
+    });
+    list.innerHTML = html;
 }
 
 
