@@ -56,6 +56,10 @@ function openSurah(id, name) {
             `${a.text} <span style="color:var(--gold); font-size: 1.1rem;">(${a.numberInSurah})</span>`
         ).join(' ');
     });
+// داخل دالة openSurah(id, name)
+if (typeof checkKhatmaProgress === "function") {
+    checkKhatmaProgress(id);
+}
 }
 
 
@@ -731,5 +735,38 @@ function trackReadingProgress(ayahNumber) {
 
 function saveKhatma() {
     localStorage.setItem('khatmaProgress', JSON.stringify(khatmaData));
+}
+function openDailyJuz() {
+    // خريطة بسيطة لبدايات الأجزاء (رقم السورة لكل جزء)
+    const juzStartSurahs = {
+        1: 1,  2: 2,  3: 2,  4: 3,  5: 4,  6: 4,  7: 5,  8: 6,  9: 7,  10: 8,
+        11: 9, 12: 11, 13: 12, 14: 15, 15: 17, 16: 18, 17: 21, 18: 23, 19: 25, 20: 27,
+        21: 29, 22: 33, 23: 36, 24: 39, 25: 41, 26: 46, 27: 51, 28: 58, 29: 67, 30: 78
+    };
+
+    const targetSurahId = juzStartSurahs[khatmaData.currentJuz] || 1;
+    const surahName = allSurahs.find(s => s.number == targetSurahId)?.name || "القرآن الكريم";
+    
+    // الانتقال لقسم القرآن وفتح السورة المطلوبة
+    switchMainTab('quran');
+    openSurah(targetSurahId, surahName);
+}
+function checkKhatmaProgress(surahId) {
+    // مثال: إذا قرأ المستخدم سورة البقرة (2) وهو في الجزء الأول، نعتبره تقدم
+    // يمكنك تطوير هذا المنطق لاحقاً ليكون أدق (بالآيات)
+    
+    // تحديث بسيط للبار اليومي للتجربة (يزيد 10% مع كل سورة تفتحها)
+    let dailyBar = document.getElementById('dailyKhatmaBar');
+    let currentWidth = parseFloat(dailyBar.style.width) || 0;
+    
+    if (currentWidth < 100) {
+        let newWidth = currentWidth + 12.5; // تقسيم الجزء على معدل 8 سور تقريباً
+        dailyBar.style.width = newWidth + "%";
+        
+        if (newWidth >= 100) {
+            dailyBar.style.background = "#27ae60"; // أخضر عند الإكمال
+            document.getElementById('daily-remaining').innerText = "تهانينا! أكملت ورد اليوم 🎉";
+        }
+    }
 }
 
