@@ -24,19 +24,11 @@ fetch('https://api.alquran.cloud/v1/surah').then(res => res.json()).then(data =>
     allSurahs = data.data; 
     displaySurahs(allSurahs); 
 });
+
 function displaySurahs(surahs) { 
     const list = document.getElementById('surahList');
-    if(!list) return; // هذا السطر يمنع التعليق إذا لم يجد القائمة
-    
-    let html = '';
-    surahs.forEach(s => {
-        html += `<div class="surah-card" onclick="openSurah(${s.number}, '${s.name}')" style="cursor:pointer;">
-                    ${s.number}. ${s.name}
-                 </div>`;
-    });
-    list.innerHTML = html;
+    list.innerHTML = surahs.map(s => `<div class="surah-card" onclick="openSurah(${s.number}, '${s.name}')">${s.number}. ${s.name}</div>`).join(''); 
 }
-
 
 function filterSurahs() { 
     const term = document.getElementById('searchInput').value; 
@@ -44,44 +36,21 @@ function filterSurahs() {
 }
 
 function openSurah(id, name) {
-    if(typeof currentSurahId !== 'undefined') currentSurahId = id;
-    
-    // إخفاء الواجهات الموجودة (تأكد من وجود هذه الـ IDs في الـ HTML)
-    const sections = ['full-quran-view', 'topics-view', 'main-view'];
-    sections.forEach(s => {
-        const el = document.getElementById(s);
-        if(el) el.style.display = 'none';
+    currentSurahId = id;
+    document.getElementById('sideMenu').classList.remove('open');
+    document.getElementById('main-view').style.display = 'none';
+    document.getElementById('quran-view').style.display = 'block';
+    document.getElementById('current-surah-title').innerText = name;
+    updateAudioSource();
+    fetch(`https://api.alquran.cloud/v1/surah/${id}`).then(res => res.json()).then(data => {
+        document.getElementById('ayahsContainer').innerHTML = data.data.ayahs.map(a => `${a.text} <span style="color:var(--gold); font-size: 1.1rem;">(${a.numberInSurah})</span>`).join(' ');
     });
-
-    const qv = document.getElementById('quran-view');
-    if(qv) {
-        qv.style.display = 'block';
-        const title = document.getElementById('current-surah-title');
-        if(title) title.innerText = name;
-        
-        if(typeof updateAudioSource === 'function') updateAudioSource();
-        
-        fetch(`https://api.alquran.cloud/v1/surah/${id}`)
-            .then(res => res.json())
-            .then(data => {
-                const container = document.getElementById('ayahsContainer');
-                if(container) {
-                    container.innerHTML = data.data.ayahs.map(a => 
-                        `${a.text} <span class="ayah-num">(${a.numberInSurah})</span>`
-                    ).join(' ');
-                }
-            }).catch(err => console.log("خطأ في التحميل"));
-    }
 }
 
-
-
 function showMain() { 
-    const fullView = document.getElementById('full-quran-view') || document.getElementById('main-view');
-    fullView.style.display = 'block'; 
+    document.getElementById('main-view').style.display = 'block'; 
     document.getElementById('quran-view').style.display = 'none'; 
-    document.getElementById('topics-view').style.display = 'none'; 
-    if(audio) audio.pause(); 
+    audio.pause(); 
     if(playBtn) playBtn.innerText = "▷";
 }
 
@@ -581,21 +550,14 @@ function selectQuranOption(option) {
 
 // 2. إضافة دالة عرض سور القسم المختار
 function showTopicSurahs(title, surahNumbers) {
-    // 1. إظهار واجهة السور وإخفاء الفهرس
-    const fullView = document.getElementById('full-quran-view') || document.getElementById('main-view');
-    fullView.style.display = 'block';
+    document.getElementById('full-quran-view').style.display = 'block';
     document.getElementById('topics-view').style.display = 'none';
     
-    // 2. فلترة السور
+    // فلترة السور (تأكد أن allSurahs محملة)
     const filtered = allSurahs.filter(s => surahNumbers.includes(parseInt(s.number)));
-    
-    // 3. عرضها (دالة displaySurahs الجديدة ستجعلها قابلة للضغط)
     displaySurahs(filtered);
     
-    // 4. تحديث نص البحث
-    const sInput = document.getElementById('searchInput') || document.getElementById('surahSearch');
-    if(sInput) sInput.value = "قسم: " + title;
-}
+    document.getElementById('searchInput').value = "قسم: " + title;
 }
 
 // 3. تعديل دالة العودية (showMain)
