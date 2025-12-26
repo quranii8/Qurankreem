@@ -1,4 +1,43 @@
 <!DOCTYPE html>
+  // 1. أضف هذه الأسطر في البداية تماماً
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+  import { getAuth, GoogleAuthProvider, signInWithRedirect, getRedirectResult } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+  // 2. هنا تضع الـ Config الخاص بك (الذي يبدأ بـ const firebaseConfig)
+  const firebaseConfig = {
+    apiKey: "AIza...",
+    authDomain: "...",
+    // ... باقي البيانات
+  };
+
+  // 3. تعريف الأدوات
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const auth = getAuth(app);
+  const provider = new GoogleAuthProvider();
+
+  // 4. دالة المزامنة (التي عدلناها لتعمل بدون Pop-up)
+  window.loginAndSync = function() {
+      signInWithRedirect(auth, provider);
+  };
+
+  // 5. كود استقبال النتيجة بعد العودة من جوجل
+  getRedirectResult(auth).then(async (result) => {
+      if (result && result.user) {
+          const localData = localStorage.getItem('khatmaProgress');
+          if (localData) {
+              await setDoc(doc(db, "users", result.user.uid), {
+                  khatma: JSON.parse(localData),
+                  displayName: result.user.displayName,
+                  lastSync: new Date()
+              });
+              alert("تمت المزامنة بنجاح ✅");
+          }
+      }
+  });
+</script>
+
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
@@ -341,7 +380,7 @@
           }
       });
   };
-</script>
+<script type="module">
 
 </body>
 </html>
