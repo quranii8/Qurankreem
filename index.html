@@ -121,7 +121,6 @@
                     <input type="range" id="seekSlider" value="0" max="100" oninput="seekAudio()">
                     <span id="durationTime">0:00</span>
                 </div>
-            </div>
 
             <audio id="audioPlayer"></audio>
         </div>
@@ -146,8 +145,6 @@
         <button onclick="selectQuranOption('quran')" style="margin: 30px auto; display: block; background:var(--gold); color:var(--dark-teal); border:none; padding:12px 25px; border-radius:12px; cursor:pointer; font-family:'Amiri', serif; font-weight:bold;">العودة للمصحف الكامل</button>
     </div>
 
-</div>
-
 <!-- ================= الأذكار ================= -->
 <div id="azkar-section" style="display:none;">
     <div class="azkar-categories" id="azkarCats">
@@ -167,7 +164,6 @@
         <h2 id="azkar-title" style="text-align:center;color:var(--gold);"></h2>
         <div id="azkarList"></div>
     </div>
-</div>
 <!-- ================= السبحة ================= -->
 <div id="sebha-section" style="display:none;">
     <div class="goal-setting">
@@ -203,7 +199,6 @@
         <div class="p-card"><span>العصر</span><b id="asr-time">--:--</b></div>
         <div class="p-card"><span>المغرب</span><b id="maghrib-time">--:--</b></div>
         <div class="p-card"><span>العشاء</span><b id="isha-time">--:--</b></div>
-    </div>
 </div>
 <div id="qibla-section" style="display:none; text-align:center;">
     <div class="qibla-container">
@@ -222,7 +217,6 @@
     </div>
 </div>
 <div id="khatma-section" style="display:none; text-align:center; padding:20px;">
-    
     <div class="daily-card shadow-lg" style="background: white; border-radius: 15px; padding: 20px; max-width: 800px; margin: auto; border: 1px solid #eee;">
         <h2 style="color:var(--gold);">🏆 تحدي الختمة (30 يوم)</h2>
         
@@ -234,7 +228,6 @@
         <hr style="margin:20px 0; opacity: 0.1;">
 
         <div id="khatma-content-area">
-            
             <div id="start-khatma-view" style="display:none;">
                 <h3 style="color:var(--dark-teal);">مرحباً بك في تحدي الختمة</h3>
                 <p>اضغط أدناه لبدء رحلة الختمة وتسجيل تاريخ اليوم</p>
@@ -256,44 +249,34 @@
                 <div class="progress-container" style="height: 8px; background:#ddd; border-radius:4px; margin-bottom:10px;">
                     <div id="juzInnerBar" style="background: var(--dark-teal); width: 0%; height:100%; transition: 0.3s;"></div>
                 </div>
-                <div id="khatma-ayahs-display" style="background:#f9f9f9; padding:20px; border-radius:15px; font-size:1.6rem; line-height:2.8; text-align:right; border:1px solid #ddd; max-height:450px; overflow-y:auto; direction:rtl;">
-                    </div>
+                <div id="khatma-ayahs-display" style="background:#f9f9f9; padding:20px; border-radius:15px; font-size:1.6rem; line-height:2.8; text-align:right; border:1px solid #ddd; max-height:450px; overflow-y:auto; direction:rtl;"></div>
                 <div style="margin-top:15px;">
                     <button onclick="markFullJuzDone()" style="background:#27ae60; color:white; border:none; padding:10px 20px; border-radius:5px; cursor:pointer;">✅ ختمت الجزء</button>
                     <button onclick="closeKhatmaReading()" style="background:#95a5a6; color:white; border:none; padding:10px 20px; border-radius:5px; margin-right:5px; cursor:pointer;">إغلاق</button>
                 </div>
             </div>
-
         </div>
     </div>
 </div>
 
-</div>
 <div id="names-section" style="display:none; padding:20px; text-align:center;">
-    <div class="section-header">
-        <h2 style="color:var(--gold);">✨ أسماء الله الحسنى ✨</h2>
-        <p style="color:var(--dark-teal);">وَلِلَّهِ الْأَسْمَاءُ الْحُسْنَىٰ فَادْعُوهُ بِهَا</p>
-    </div>
+    <h2 style="color:var(--gold);">✨ أسماء الله الحسنى ✨</h2>
+    <div id="names-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 15px; margin-top: 20px;"></div>
     
-    <div id="names-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 15px; margin-top: 20px;">
-        </div>
-
     <div id="name-details-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:1000; justify-content:center; align-items:center; padding:20px;">
         <div style="background:white; border-radius:20px; padding:30px; max-width:500px; width:100%; position:relative; text-align:right; border:3px solid var(--gold);">
             <button onclick="closeNameDetails()" style="position:absolute; top:10px; left:10px; border:none; background:none; font-size:25px; cursor:pointer;">✖</button>
             <h1 id="modal-name-title" style="color:var(--gold); text-align:center; font-size:3rem; margin-bottom:10px;"></h1>
             <hr>
-            <div style="margin-top:20px;">
-                <h4 style="color:var(--dark-teal);">📖 المعنى والتفسير:</h4>
-                <p id="modal-name-desc" style="line-height:1.6; font-size:1.1rem;"></p>
-                <br>
-                <h4 style="color:var(--dark-teal);">🔢 عدد المرات في القرآن:</h4>
-                <p id="modal-name-count" style="font-weight:bold;"></p>
-            </div>
+            <p id="modal-name-desc" style="line-height:1.6; font-size:1.1rem; margin-top:20px;"></p>
+            <p id="modal-name-count" style="font-weight:bold; color:var(--dark-teal); margin-top:10px;"></p>
         </div>
     </div>
 </div>
 
+</div> ```
+
+**الآن، عدّل ملف الـ HTML لديك بناءً على هذا الترتيب. إذا انتهيت، أرسل لي ملف الـ `script.js` لنقوم بتنظيفه وفحصه بدقة خطوة بخطوة.** هل قمت بالتعديل؟
 
 </div>
 
