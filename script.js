@@ -542,29 +542,28 @@ function toggleQuranDropdown(event) {
 // 1. تعديل دالة اختيار خيار القرآن
 function selectQuranOption(option) {
     document.getElementById("quranDropdown").classList.remove("show-dropdown");
-    switchMainTab('quran'); // تفعيل القسم الرئيسي
+    switchMainTab('quran'); 
 
     const fullView = document.getElementById('full-quran-view');
     const topicsView = document.getElementById('topics-view');
     const quranView = document.getElementById('quran-view');
+    const searchBox = document.querySelector('.search-box'); // تحديد مربع البحث
 
     if (option === 'quran') {
         fullView.style.display = 'block';
         topicsView.style.display = 'none';
         quranView.style.display = 'none';
+        if (searchBox) searchBox.style.display = 'block'; // إظهار البحث في المصحف الكامل
         displaySurahs(allSurahs); 
         document.getElementById('searchInput').value = '';
     } else if (option === 'topics') {
         fullView.style.display = 'none';
         topicsView.style.display = 'block';
         quranView.style.display = 'none';
-        if (option === 'quran') {
-    // ... الكود الموجود لديك ...
-    document.querySelector('.search-box').style.display = 'block'; // إعادة إظهار البحث
-    if (document.getElementById('backToTopicsContainer')) {
-        document.getElementById('backToTopicsContainer').style.display = 'none';
+        if (searchBox) searchBox.style.display = 'none'; // إخفاء البحث في الفهرس
     }
 }
+
 
 // 2. إضافة دالة عرض سور القسم المختار
 function showTopicSurahs(title, surahNumbers) {
