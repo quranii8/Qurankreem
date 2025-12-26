@@ -38,14 +38,19 @@ function filterSurahs() {
 function openSurah(id, name) {
     currentSurahId = id;
     document.getElementById('sideMenu').classList.remove('open');
-    document.getElementById('main-view').style.display = 'none';
+    
+    // هذا السطر هو اللي بيحل المشكلة: بيخفي القائمة ويفتح السورة
+    document.getElementById('full-quran-view').style.display = 'none';
+    document.getElementById('topics-view').style.display = 'none';
     document.getElementById('quran-view').style.display = 'block';
+    
     document.getElementById('current-surah-title').innerText = name;
     updateAudioSource();
     fetch(`https://api.alquran.cloud/v1/surah/${id}`).then(res => res.json()).then(data => {
         document.getElementById('ayahsContainer').innerHTML = data.data.ayahs.map(a => `${a.text} <span style="color:var(--gold); font-size: 1.1rem;">(${a.numberInSurah})</span>`).join(' ');
     });
 }
+
 
 function showMain() { 
     document.getElementById('main-view').style.display = 'block'; 
