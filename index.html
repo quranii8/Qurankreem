@@ -124,6 +124,27 @@
 
         <div class="ayah-text" id="ayahsContainer"></div>
     </div>
+    <div id="topics-view" style="display:none; padding:10px;">
+    <h3 style="color:var(--gold); text-align:center; margin-bottom:20px; font-size: 1.5rem;">الفهرس الموضوعي الجامع</h3>
+    
+    <div class="surah-grid">
+        <div class="surah-card" onclick="showTopicSurahs('قصص الأنبياء', [11, 12, 14, 18, 19, 20, 21, 28])">📜 قصص الأنبياء</div>
+        <div class="surah-card" onclick="showTopicSurahs('أهوال القيامة', [75, 78, 81, 82, 84, 99, 101])">🌋 أهوال القيامة</div>
+        <div class="surah-card" onclick="showTopicSurahs('العبادات والأحكام', [2, 4, 5, 9, 22, 24, 62])">🕋 العبادات والأحكام</div>
+        <div class="surah-card" onclick="showTopicSurahs('الرقية والشفاء', [1, 112, 113, 114, 17, 10])">🛡️ الرقية والشفاء</div>
+        <div class="surah-card" onclick="showTopicSurahs('الأخلاق والآداب', [31, 49, 103, 104, 107, 68])">❤️ الأخلاق والآداب</div>
+        <div class="surah-card" onclick="showTopicSurahs('عظمة الخالق', [13, 16, 27, 30, 35, 41, 55])">🌌 عظمة الخالق</div>
+        <div class="surah-card" onclick="showTopicSurahs('الجنة ونعيمها', [55, 56, 76, 88, 39, 43])">🌳 الجنة ونعيمها</div>
+        <div class="surah-card" onclick="showTopicSurahs('الصبر والابتلاء', [2, 3, 90, 93, 94, 103])">💎 الصبر والابتلاء</div>
+        <div class="surah-card" onclick="showTopicSurahs('التوحيد والعقيدة', [1, 112, 109, 2, 3, 59])">☝️ التوحيد والعقيدة</div>
+        <div class="surah-card" onclick="showTopicSurahs('تراجم السور (المسبحات)', [57, 59, 61, 62, 64])">✨ المسبحات</div>
+    </div>
+
+    <button onclick="selectQuranOption('quran')" style="margin: 30px auto; display: block; background:var(--gold); color:var(--dark-teal); border:none; padding:12px 25px; border-radius:12px; cursor:pointer; font-family:'Amiri', serif; font-weight:bold; font-size:1.1rem; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">
+        العودة للمصحف الكامل
+    </button>
+</div>
+
 </div>
 <!-- ================= الأذكار ================= -->
 <div id="azkar-section" style="display:none;">
