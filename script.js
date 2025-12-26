@@ -802,79 +802,48 @@ function closeNameDetails() {
     document.getElementById('name-details-modal').style.display = 'none';
 }
 function switchMainTab(t) {
-    // 1. تحديث شكل الأزرار (Active State)
+    // 1. تحديث شكل الأزرار (بشرط التأكد من وجود الزر أولاً عشان ما يعلق الكود)
     document.querySelectorAll('.main-nav button').forEach(b => b.classList.remove('active'));
     const activeBtn = document.getElementById(t + 'Tab');
     if (activeBtn) activeBtn.classList.add('active');
 
-    // 2. مصفوفة الأقسام (تأكد أن الـ IDs في الـ HTML تطابق هذه الأسماء)
-    const allSections = [
-        'quran-section', 
-        'azkar-section', 
-        'sebha-section', 
-        'prayer-section', 
-        'qibla-section', 
-        'khatma-section', 
-        'names-section'
-    ];
+    // 2. قائمة الأقسام كما هي في الـ HTML عندك
+    const sections = {
+        'quran': 'quran-section',
+        'azkar': 'azkar-section',
+        'sebha': 'sebha-section',
+        'prayer': 'prayer-section',
+        'qibla': 'qibla-section',
+        'khatma': 'khatma-section',
+        'names': 'names-section'
+    };
 
-    // 3. التنقل الفوري وإخفاء الأقسام غير النشطة
-    allSections.forEach(s => {
-        const el = document.getElementById(s);
-        if (el) {
-            el.style.display = (s === t + '-section') ? 'block' : 'none';
-        }
+    // 3. إخفاء الكل وإظهار القسم المطلوب فقط
+    Object.values(sections).forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = 'none';
     });
 
-    // 4. تشغيل "المحركات الداخلية" لكل قسم لضمان تحديث البيانات
-    try {
-        if (t === 'quran') {
-            // إعادة ضبط واجهة القرآن للحالة الرئيسية (المصحف الكامل)
-            if (typeof showMain === 'function') showMain();
-        }
-        
-        if (t === 'khatma') {
-            // تشغيل محرك الختمة (عرض الورد، حفظ التقدم، العداد التنازلي)
-            if (typeof updateKhatmaUI === 'function') updateKhatmaUI();
-        }
+    const targetId = sections[t];
+    const targetEl = document.getElementById(targetId);
+    if (targetEl) {
+        targetEl.style.display = 'block';
+    }
 
-        if (t === 'names') {
-            // بناء شبكة أسماء الله الحسنى فوراً عند الفتح
-            if (typeof initNamesGrid === 'function') initNamesGrid();
-        }
+    // 4. تشغيل الدوال الخاصة بكل قسم (فقط إذا كانت موجودة)
+    if (t === 'quran' && typeof showMain === 'function') showMain();
+    if (t === 'khatma' && typeof updateKhatmaUI === 'function') updateKhatmaUI();
+    if (t === 'names' && typeof initNamesGrid === 'function') initNamesGrid();
+    if (t === 'prayer' && typeof fetchPrayers === 'function') fetchPrayers();
+    if (t === 'qibla' && typeof getQibla === 'function') getQibla();
 
-        if (t === 'prayer') {
-            // طلب الموقع وتحديث مواقيت الصلاة والمنبهات
-            if (typeof fetchPrayers === 'function') fetchPrayers();
-        }
-
-        if (t === 'qibla') {
-            // تشغيل حسابات القبلة
-            if (typeof getQibla === 'function') getQibla();
-        }
-
-        // إغلاق القائمة الجانبية تلقائياً بعد الاختيار لراحة المستخدم
-        if (document.getElementById('sideMenu')?.classList.contains('open')) {
-            toggleMenu();
-        }
-
-    } catch (error) {
-        console.warn("إشعار: القسم يحتاج لتحميل البيانات أو وجود دالة مفقودة:", error);
+    // 5. إغلاق المنيو الجانبية (Sidebar) لو كانت مفتوحة
+    const sideMenu = document.getElementById('sideMenu');
+    if (sideMenu && sideMenu.classList.contains('open')) {
+        toggleMenu();
     }
 }
-// --- 8. تشغيل المحركات عند تحميل الصفحة لأول مرة ---
-window.addEventListener('DOMContentLoaded', () => {
-    // تشغيل آية اليوم
-    loadDailyAyah();
-    // تشغيل عداد الصلاة إذا كان المستخدم في قسم الصلاة
-    fetchPrayers();
-    // تهيئة نظام الختمة
-    if (localStorage.getItem('khatmaProgress')) {
-        updateKhatmaUI();
-    }
-    // جعل قسم القرآن هو القسم الافتراضي عند الفتح
-    switchMainTab('quran');
-});
+
 
 // إغلاق المودال عند الضغط خارجه (لأسماء الله الحسنى)
 window.onclick = function(event) {
