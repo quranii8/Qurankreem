@@ -519,3 +519,34 @@ setInterval(() => {
         }
     }
 }, 60000);
+// دالة فتح وإغلاق القائمة المنسدلة
+function toggleQuranDropdown(event) {
+    event.stopPropagation();
+    document.getElementById("quranDropdown").classList.toggle("show-dropdown");
+}
+
+// دالة اختيار الخيار المطلوب
+function selectQuranOption(option) {
+    document.getElementById("quranDropdown").classList.remove("show-dropdown");
+    if (option === 'quran') {
+        switchMainTab('quran');
+        showMain(); [span_2](start_span)// للعودة لشبكة السور[span_2](end_span)
+    } else if (option === 'topics') {
+        alert("قسم الفهرس الموضوعي قيد التطوير قريباً");
+        // يمكنك هنا توجيه المستخدم لصفحة أو قسم آخر
+    }
+}
+
+// إغلاق القائمة إذا ضغط المستخدم في أي مكان خارجها
+window.onclick = function(event) {
+    if (!event.target.matches('.dropbtn')) {
+        var dropdowns = document.getElementsByClassName("dropdown-content");
+        for (var i = 0; i < dropdowns.length; i++) {
+            var openDropdown = dropdowns[i];
+            if (openDropdown.classList.contains('show-dropdown')) {
+                openDropdown.classList.remove('show-dropdown');
+            }
+        }
+    }
+}
+
