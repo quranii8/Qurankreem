@@ -597,34 +597,46 @@ function showMain() {
 let khatmaData = JSON.parse(localStorage.getItem('khatmaProgress')) || null;
 
 function updateKhatmaUI() {
-    // جلب البيانات من الذاكرة
+    // 1. جلب البيانات من الذاكرة
     khatmaData = JSON.parse(localStorage.getItem('khatmaProgress')) || null;
 
     const startView = document.getElementById('start-khatma-view');
     const activeView = document.getElementById('active-khatma-view');
     const readingArea = document.getElementById('khatma-reading-area');
 
+    // التأكد من وجود العناصر قبل العمل عليها لتجنب الأخطاء
+    if (!startView || !activeView || !readingArea) return;
+
     if (!khatmaData) {
-        // إذا لم يبدأ التحدي: اظهر زر البدء فقط
-        if(startView) startView.style.display = 'block';
-        if(activeView) activeView.style.display = 'none';
-        if(readingArea) readingArea.style.display = 'none';
+        // حالة: لم يبدأ التحدي بعد
+        startView.style.display = 'block';
+        activeView.style.display = 'none';
+        readingArea.style.display = 'none';
         
         document.getElementById('totalKhatmaBar').style.width = "0%";
         document.getElementById('total-percent-text').innerText = "التقدم الكلي: 0%";
     } else {
-        // إذا التحدي نشط: اظهر تفاصيل التقدم
-        if(startView) startView.style.display = 'none';
-        if(activeView) activeView.style.display = 'block';
+        // حالة: التحدي نشط
+        startView.style.display = 'none';
+        activeView.style.display = 'block';
+        // نخفي منطقة القراءة إلا إذا ضغط المستخدم على "تابع القراءة"
+        readingArea.style.display = 'none'; 
         
         document.getElementById('daily-task-title').innerText = `ورد اليوم (الجزء ${khatmaData.currentJuz})`;
         document.getElementById('khatma-start-date').innerText = `تاريخ البدء: ${khatmaData.startDate}`;
 
+        // تحديث شريط التقدم الكلي
         const totalPercent = Math.round(((khatmaData.currentJuz - 1) / 30) * 100);
         document.getElementById('totalKhatmaBar').style.width = totalPercent + "%";
         document.getElementById('total-percent-text').innerText = `التقدم الكلي: ${totalPercent}%`;
         
-        startKhatmaTimer();
+        // تشغيل العداد التنازلي لنهاية اليوم
+        if (typeof startKhatmaTimer === 'function') {
+            startKhatmaTimer();
+        }
+    }
+} // إغلاق الدالة بشكل صحيح
+
     }
 }
 
