@@ -35,6 +35,11 @@
     <button class="menu-tool-btn" onclick="getQibla()">📍</button>
 </div>
 
+<div class="menu-item">
+    <span>تنبيهات الأذان</span>
+    <button id="notifBtn" class="menu-tool-btn" onclick="requestNotificationPermission()">🔔</button>
+</div>
+
 </div>
 
     </div>
@@ -47,9 +52,16 @@
 <header>
     <div class="menu-icon" onclick="toggleMenu()">☰</div>
     <h1>حقيبة المؤمن</h1>
-
+    
     <div class="main-nav">
-        <button id="quranTab" class="active" onclick="switchMainTab('quran')">القرآن الكريم</button>
+<div class="quran-menu-wrapper">
+    <button id="quranTab" class="active dropbtn" onclick="toggleQuranDropdown(event)">القرآن الكريم ▾</button>
+    <div id="quranDropdown" class="dropdown-content">
+        <a href="javascript:void(0)" onclick="selectQuranOption('quran')">المصحف كاملاً</a>
+        <a href="javascript:void(0)" onclick="selectQuranOption('topics')">الفهرس الموضوعي</a>
+    </div>
+</div>
+
         <button id="azkarTab" onclick="switchMainTab('azkar')">قسم الأذكار</button>
         <button id="sebhaTab" onclick="switchMainTab('sebha')">السبحة</button>
         <button id="prayerTab" onclick="switchMainTab('prayer')">مواقيت الصلاة</button>
@@ -62,7 +74,16 @@
 
 <!-- ================= القرآن ================= -->
 <div id="quran-section">
-    <div id="main-view">
+    <div id="daily-content" class="daily-card">
+        <div class="daily-header">
+            <span class="daily-icon">📖</span>
+            <span class="daily-title">آية اليوم</span>
+        </div>
+        <p id="daily-text" class="daily-text">جاري تحميل الآية...</p>
+        <small id="daily-ref" class="daily-ref"></small>
+        <button onclick="copyDailyAyah()" class="copy-btn">نسخ الآية 📋</button>
+    </div>
+    <div id="main-view"> ```
         <div class="search-box">
             <input type="text" id="searchInput" placeholder="ابحث عن سورة..." onkeyup="filterSurahs()">
         </div>
@@ -104,7 +125,6 @@
         <div class="ayah-text" id="ayahsContainer"></div>
     </div>
 </div>
-
 <!-- ================= الأذكار ================= -->
 <div id="azkar-section" style="display:none;">
     <div class="azkar-categories" id="azkarCats">
@@ -125,7 +145,6 @@
         <div id="azkarList"></div>
     </div>
 </div>
-
 <!-- ================= السبحة ================= -->
 <div id="sebha-section" style="display:none;">
     <div class="goal-setting">
@@ -179,12 +198,11 @@
         <p id="qibla-status" style="margin-top:10px; font-size:14px;">اضغط الزر لتفعيل الحركة</p>
     </div>
 </div>
-
-</div>
-
 </div>
 
 <audio id="notificationSound" src="https://www.soundjay.com/buttons/sounds/button-37a.mp3"></audio>
 <script src="script.js"></script>
+<audio id="azanSound" src="https://www.islamcan.com/common/makkah.mp3" preload="auto"></audio>
+
 </body>
 </html>
