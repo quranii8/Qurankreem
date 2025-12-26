@@ -910,21 +910,5 @@ function closeNameDetails() {
 
 // تعديل دالة السويتش لتشغيل القسم
 // تأكد من إضافة 'names-section' لمصفوفة الأقسام داخل دالة switchMainTab
-function switchMainTab(t) {
-    document.querySelectorAll('.main-nav button').forEach(b => b.classList.remove('active'));
-    document.getElementById(t + 'Tab')?.classList.add('active');
-
-    // أضف names-section هنا
-    const allSections = ['quran-section', 'azkar-section', 'sebha-section', 'prayer-section', 'qibla-section', 'khatma-section', 'names-section'];
-    
-    allSections.forEach(s => {
-        const el = document.getElementById(s);
-        if (el) el.style.display = s.startsWith(t) ? 'block' : 'none';
-    });
-
-    if(t === 'names') initNamesGrid(); // تشغيل شبكة الأسماء عند فتح القسم
-    [cite_start]if(t === 'qibla') getQibla();[span_0](end_span)
-    [span_1](start_span)if(t === 'prayer') fetchPrayers();[span_1](end_span)
-}
 
 
