@@ -695,93 +695,71 @@ function switchMainTab(t) {
 }
 // بيانات الختمة
 // 1. إدارة بيانات الختمة في الذاكرة
-let khatmaData = JSON.parse(localStorage.getItem('khatmaProgress')) || {
-    currentJuz: 1,
-    lastAyahIndex: 0,
-    lastUpdate: new Date().toDateString()
-};
+// 1. نظام إدارة البيانات الجديد
+let khatmaData = JSON.parse(localStorage.getItem('khatmaProgress')) || null;
 
-let currentJuzAyahs = [];
-
-// 2. دالة بدء القراءة وجلب الجزء
-async function startKhatmaReading() {
-    document.getElementById('khatma-intro').style.display = 'none';
-    document.getElementById('khatma-reading-area').style.display = 'block';
-    
-    const juzId = khatmaData.currentJuz;
-    const displayArea = document.getElementById('khatma-ayahs-display');
-    displayArea.innerHTML = "<p style='text-align:center;'>جاري جلب وردك اليومي...</p>";
-
-    try {
-        const res = await fetch(`https://api.alquran.cloud/v1/juz/${juzId}/quran-simple`);
-        const data = await res.json();
-        currentJuzAyahs = data.data.ayahs;
-        
-        displayArea.innerHTML = currentJuzAyahs.map((a, index) => {
-            return `${a.text} <span class="ayah-mark" id="mark-${index}" onclick="saveCheckpoint(${index})" style="color:var(--gold); cursor:pointer; font-weight:bold; border:1px solid #ddd; padding:2px 5px; border-radius:5px; margin:0 5px; display:inline-block;">(${a.numberInSurah})</span>`;
-        }).join(' ');
-
-        // استعادة آخر نقطة توقف
-        if(khatmaData.lastAyahIndex > 0) {
-            saveCheckpoint(khatmaData.lastAyahIndex);
-            // تمرير التصفح تلقائياً لآخر آية
-            setTimeout(() => {
-                const lastMark = document.getElementById(`mark-${khatmaData.lastAyahIndex}`);
-                if(lastMark) lastMark.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }, 500);
-        }
-    } catch (e) {
-        displayArea.innerText = "تعذر تحميل الورد، تأكد من الإنترنت.";
-    }
-}
-
-// 3. حفظ "علامة الوصول" وتحديث البار الداخلي
-function saveCheckpoint(index) {
-    const totalAyahs = currentJuzAyahs.length;
-    const progress = Math.round(((index + 1) / totalAyahs) * 100);
-    
-    document.getElementById('juzInnerBar').style.width = progress + "%";
-    document.getElementById('juz-progress-text').innerText = `تقدمك في هذا الجزء: ${progress}%`;
-    
-    khatmaData.lastAyahIndex = index;
-    localStorage.setItem('khatmaProgress', JSON.stringify(khatmaData));
-
-    // تمييز الأرقام (تلوين ما تم قراءته)
-    const marks = document.querySelectorAll('.ayah-mark');
-    marks.forEach((m, i) => {
-        if(i <= index) {
-            m.style.background = "var(--gold)";
-            m.style.color = "white";
-        } else {
-            m.style.background = "transparent";
-            m.style.color = "var(--gold)";
-        }
-    });
-}
-
-// 4. إنهاء الجزء كاملاً
-function markFullJuzDone() {
-    if(confirm("هل أنهيت قراءة الجزء بالكامل؟ سيتم نقلك للجزء التالي.")) {
-        khatmaData.currentJuz++;
-        khatmaData.lastAyahIndex = 0;
-        localStorage.setItem('khatmaProgress', JSON.stringify(khatmaData));
-        updateKhatmaUI();
-        closeKhatmaReading();
-    }
-}
-
-function closeKhatmaReading() {
-    document.getElementById('khatma-intro').style.display = 'block';
-    document.getElementById('khatma-reading-area').style.display = 'none';
-}
-
-// 5. تحديث الواجهة الرئيسية (البار الكلي)
 function updateKhatmaUI() {
+    if (!khatmaData) {
+        document.getElementById('start-khatma-view').style.display = 'block';
+        document.getElementById('active-khatma-view').style.display = 'none';
+        return;
+    }
+
+    document.getElementById('start-khatma-view').style.display = 'none';
+    document.getElementById('active-khatma-view').style.display = 'block';
+
+    // تحديث النصوص
+    document.getElementById('daily-task-title').innerText = `ورد اليوم (الجزء ${khatmaData.currentJuz})`;
+    document.getElementById('khatma-start-date').innerText = `تاريخ البدء: ${khatmaData.startDate}`;
+
+    // تحديث البار الكلي (الجزء الحالي من 30)
     const totalPercent = Math.round(((khatmaData.currentJuz - 1) / 30) * 100);
     document.getElementById('totalKhatmaBar').style.width = totalPercent + "%";
     document.getElementById('total-percent-text').innerText = `التقدم الكلي: ${totalPercent}%`;
-    document.getElementById('daily-task-title').innerText = `ورد اليوم (الجزء ${khatmaData.currentJuz})`;
+
+    startKhatmaTimer();
 }
+
+// 2. دالة البداية لأول مرة
+function initializeKhatma() {
+    const today = new Date();
+    khatmaData = {
+        currentJuz: 1,
+        lastAyahIndex: 0,
+        startDate: today.toLocaleDateString('ar-EG'),
+        startTime: today.getTime()
+    };
+    localStorage.setItem('khatmaProgress', JSON.stringify(khatmaData));
+    updateKhatmaUI();
+}
+
+// 3. عداد الوقت (حتى نهاية اليوم)
+function startKhatmaTimer() {
+    setInterval(() => {
+        const now = new Date();
+        const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+        const diff = tomorrow - now;
+
+        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+        const timerEl = document.getElementById('time-left');
+        if (timerEl) {
+            timerEl.innerText = `${hours} ساعة و ${minutes} دقيقة`;
+        }
+    }, 1000);
+}
+
+// 4. حذف التقدم والبدء من جديد
+function resetKhatma() {
+    if (confirm("هل تريد حقاً إعادة التحدي من البداية؟ سيتم حذف كل تقدمك.")) {
+        localStorage.removeItem('khatmaProgress');
+        khatmaData = null;
+        updateKhatmaUI();
+    }
+}
+
 // بيانات أسماء الله الحسنى (عينة للتجربة - يمكنك إكمال الـ 99 بنفس النمط)
 const namesData = [
     { name: "الله", desc: "العلم على الذات الواجب الوجود، المستحق لكل المحامد، وهو الاسم الجامع لكل معاني الأسماء الحسنى.", count: "ورد في القرآن 2702 مرة." },
