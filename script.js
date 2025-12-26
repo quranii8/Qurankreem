@@ -526,90 +526,45 @@ function toggleQuranDropdown(event) {
 }
 
 // دالة اختيار الخيار المطلوب
+// 1. تعديل دالة اختيار خيار القرآن
 function selectQuranOption(option) {
     document.getElementById("quranDropdown").classList.remove("show-dropdown");
+    switchMainTab('quran'); // تفعيل القسم الرئيسي
+
+    const fullView = document.getElementById('full-quran-view');
+    const topicsView = document.getElementById('topics-view');
+    const quranView = document.getElementById('quran-view');
+
     if (option === 'quran') {
-        switchMainTab('quran');
-        showMain(); [span_2](start_span)// للعودة لشبكة السور[span_2](end_span)
+        fullView.style.display = 'block';
+        topicsView.style.display = 'none';
+        quranView.style.display = 'none';
+        displaySurahs(allSurahs); 
+        document.getElementById('searchInput').value = '';
     } else if (option === 'topics') {
-        alert("قسم الفهرس الموضوعي قيد التطوير قريباً");
-        // يمكنك هنا توجيه المستخدم لصفحة أو قسم آخر
+        fullView.style.display = 'none';
+        topicsView.style.display = 'block';
+        quranView.style.display = 'none';
     }
 }
 
-// إغلاق القائمة إذا ضغط المستخدم في أي مكان خارجها
-window.onclick = function(event) {
-    if (!event.target.matches('.dropbtn')) {
-        var dropdowns = document.getElementsByClassName("dropdown-content");
-        for (var i = 0; i < dropdowns.length; i++) {
-            var openDropdown = dropdowns[i];
-            if (openDropdown.classList.contains('show-dropdown')) {
-                openDropdown.classList.remove('show-dropdown');
-            }
-        }
-    }
-}
-// دالة عرض سور معينة بناءً على الموضوع المختبر
+// 2. إضافة دالة عرض سور القسم المختار
 function showTopicSurahs(title, surahNumbers) {
-    // 1. العودة لواجهة السور
-    document.getElementById('surahList').parentElement.style.display = 'block';
+    document.getElementById('full-quran-view').style.display = 'block';
     document.getElementById('topics-view').style.display = 'none';
-
-    // 2. تحديث عنوان البحث ليعرف المستخدم ماذا يرى
-    document.getElementById('surahSearch').value = "قسم: " + title;
-
-    // 3. فلترة القائمة بناءً على أرقام السور الممررة
-    const filtered = allSurahs.filter(s => surahNumbers.includes(s.number));
+    
+    // فلترة السور (تأكد أن allSurahs محملة)
+    const filtered = allSurahs.filter(s => surahNumbers.includes(parseInt(s.number)));
     displaySurahs(filtered);
     
-    // 4. إضافة زر صغير لمسح الفلترة والعودة للكل
-    if(!document.getElementById('clearFilter')) {
-        const btn = document.createElement('button');
-        btn.id = 'clearFilter';
-        btn.innerText = 'عرض كل السور';
-        btn.onclick = () => { 
-            displaySurahs(allSurahs); 
-            document.getElementById('surahSearch').value = '';
-            btn.remove();
-        };
-        btn.style = "display:block; margin:10px auto; background:var(--dark-teal); color:var(--gold); border:1px solid var(--gold); padding:5px 10px; border-radius:8px; cursor:pointer;";
-        document.getElementById('surahList').before(btn);
-    }
+    document.getElementById('searchInput').value = "قسم: " + title;
 }
 
-// تعديل الدالة الأساسية لضمان عمل التبديل
-function selectQuranOption(option) {
-    // 1. إغلاق القائمة المنسدلة
-    document.getElementById("quranDropdown").classList.remove("show-dropdown");
-    
-    // 2. تفعيل القسم الرئيسي (القرآن)
-    switchMainTab('quran');
-
-    // 3. التحكم في الأقسام الفرعية (مهم جداً استخدام هذه الأسطر)
-    const fullView = document.getElementById('full-quran-view');
-    const topicsView = document.getElementById('topics-view');
-
-    if (option === 'quran') {
-        fullView.style.setProperty('display', 'block', 'important');
-        topicsView.style.setProperty('display', 'none', 'important');
-        showMain(); // للعودة للقائمة الرئيسية للسور
-    } else if (option === 'topics') {
-        fullView.style.setProperty('display', 'none', 'important');
-        topicsView.style.setProperty('display', 'block', 'important');
-        // في حال كان القارئ مفتوحاً، نخفيه لنظهر الفهرس
-        document.getElementById('surah-detail').style.display = 'none';
-    }
-}
-
-// دالة عرض السور المفلترة (تأكد من وجودها)
-function showTopicSurahs(title, surahNumbers) {
-    const fullView = document.getElementById('full-quran-view');
-    const topicsView = document.getElementById('topics-view');
-    
-    fullView.style.display = 'block';
-    topicsView.style.display = 'none';
-    
-    document.getElementById('surahSearch').value = "قسم: " + title;
-    const filtered = allSurahs.filter(s => surahNumbers.includes(s.number));
-    displaySurahs(filtered);
+// 3. تعديل دالة العودية (showMain)
+function showMain() { 
+    document.getElementById('full-quran-view').style.display = 'block'; 
+    document.getElementById('quran-view').style.display = 'none'; 
+    document.getElementById('topics-view').style.display = 'none'; 
+    if(audio) audio.pause(); 
+    if(playBtn) playBtn.innerText = "▷";
 }
