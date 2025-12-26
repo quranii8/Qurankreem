@@ -221,31 +221,45 @@
     </div>
 </div>
 <div id="khatma-section" style="display:none; text-align:center; padding:20px;">
-    <div class="daily-card shadow-lg">
+    <div class="daily-card shadow-lg" style="background: white; border-radius: 15px; padding: 20px; max-width: 800px; margin: auto;">
         <h2 style="color:var(--gold);">🏆 تحدي الختمة (30 يوم)</h2>
-        <p id="khatma-status" style="font-size: 1.1rem; margin-bottom: 10px;">جاري حساب وردك اليومي...</p>
         
-        <div class="progress-container" style="height: 25px; border: 1px solid var(--gold);">
-            <div id="totalKhatmaBar" class="progress-bar" style="background: linear-gradient(90deg, var(--gold), #e6cc91); width: 0%;"></div>
+        <div class="progress-container" style="height: 20px; background:#eee; border-radius:10px; overflow:hidden; margin-top:10px;">
+            <div id="totalKhatmaBar" style="background: linear-gradient(90deg, #d4af37, #f1c40f); width: 0%; height:100%; transition: 0.5s;"></div>
         </div>
-        <small id="total-percent-text" style="color:var(--dark-teal); font-weight:bold;">التقدم الكلي: 0%</small>
+        <small id="total-percent-text" style="color:var(--dark-teal); font-weight:bold; display:block; margin-top:5px;">التقدم الكلي: 0%</small>
 
-        <hr style="margin:20px 0; border:0.5px solid rgba(0,0,0,0.1);">
+        <hr style="margin:20px 0; opacity: 0.2;">
 
-        <h3 id="daily-task-title">ورد اليوم (الجزء 1)</h3>
-        <div class="progress-container" style="height: 15px;">
-            <div id="dailyKhatmaBar" class="progress-bar" style="background: var(--dark-teal); width: 0%;"></div>
+        <div id="khatma-reading-area" style="display:none;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                <small id="juz-progress-text" style="color:var(--dark-teal); font-weight:bold;">تقدمك في الجزء: 0%</small>
+            </div>
+            <div class="progress-container" style="height: 10px; background:#ddd; border-radius:5px; margin-bottom:15px;">
+                <div id="juzInnerBar" style="background: var(--dark-teal); width: 0%; height:100%; transition: 0.3s;"></div>
+            </div>
+
+            <h3 id="khatma-surah-title" style="color:var(--gold); margin-bottom:15px;"></h3>
+            
+            <div id="khatma-ayahs-display" style="background:#fff; padding:20px; border-radius:15px; font-size:1.6rem; line-height:2.8; text-align:right; border:2px solid var(--gold); max-height:500px; overflow-y:auto; direction:rtl; font-family: 'Amiri', serif;">
+                </div>
+
+            <p style="margin-top:10px; font-size:0.9rem; color:#666;">💡 اضغط على رقم الآية عند وصولك إليها لحفظ تقدمك.</p>
+            
+            <div style="margin-top:20px;">
+                <button onclick="markFullJuzDone()" style="background:#27ae60; color:white; border:none; padding:12px 25px; border-radius:8px; font-weight:bold; cursor:pointer;">✅ أكملت الجزء كاملاً</button>
+                <button onclick="closeKhatmaReading()" style="background:#95a5a6; color:white; border:none; padding:12px 25px; border-radius:8px; margin-right:10px; cursor:pointer;">إغلاق</button>
+            </div>
         </div>
-        <p id="daily-remaining" style="font-size: 0.9rem; margin-top: 5px;">متبقي لك 8 صفحات لإنهاء ورد اليوم</p>
-        
-        <button class="modern-back-btn" style="margin-top:15px; background:var(--dark-teal); color:var(--gold);" onclick="openDailyJuz()">📖 ابدأ القراءة الآن</button>
-    </div>
 
-    <div id="backlog-card" class="daily-card" style="display:none; border-color: #e74c3c;">
-        <h4 style="color:#e74c3c;">⚠️ مهام فائتة</h4>
-        <p id="backlog-text" style="font-size: 0.9rem;">لديك أجزاء لم تكتمل من الأيام السابقة.</p>
+        <div id="khatma-intro">
+            <h3 id="daily-task-title" style="color:var(--dark-teal);">ورد اليوم (الجزء 1)</h3>
+            <p style="color:#7f8c8d; margin-bottom:20px;">ابدأ وردك اليومي وسجل تقدمك آية بآية</p>
+            <button class="modern-back-btn" style="background:var(--dark-teal); color:var(--gold); padding:15px 40px; font-size:1.1rem; border-radius:30px; cursor:pointer; border:none;" onclick="startKhatmaReading()">📖 ابدأ القراءة الآن</button>
+        </div>
     </div>
 </div>
+
 
 </div>
 
