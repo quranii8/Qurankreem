@@ -219,6 +219,33 @@
         <p id="qibla-status" style="margin-top:10px; font-size:14px;">اضغط الزر لتفعيل الحركة</p>
     </div>
 </div>
+<div id="khatma-section" style="display:none; text-align:center; padding:20px;">
+    <div class="daily-card shadow-lg">
+        <h2 style="color:var(--gold);">🏆 تحدي الختمة (30 يوم)</h2>
+        <p id="khatma-status" style="font-size: 1.1rem; margin-bottom: 10px;">جاري حساب وردك اليومي...</p>
+        
+        <div class="progress-container" style="height: 25px; border: 1px solid var(--gold);">
+            <div id="totalKhatmaBar" class="progress-bar" style="background: linear-gradient(90deg, var(--gold), #e6cc91); width: 0%;"></div>
+        </div>
+        <small id="total-percent-text" style="color:var(--dark-teal); font-weight:bold;">التقدم الكلي: 0%</small>
+
+        <hr style="margin:20px 0; border:0.5px solid rgba(0,0,0,0.1);">
+
+        <h3 id="daily-task-title">ورد اليوم (الجزء 1)</h3>
+        <div class="progress-container" style="height: 15px;">
+            <div id="dailyKhatmaBar" class="progress-bar" style="background: var(--dark-teal); width: 0%;"></div>
+        </div>
+        <p id="daily-remaining" style="font-size: 0.9rem; margin-top: 5px;">متبقي لك 8 صفحات لإنهاء ورد اليوم</p>
+        
+        <button class="modern-back-btn" style="margin-top:15px; background:var(--dark-teal); color:var(--gold);" onclick="openDailyJuz()">📖 ابدأ القراءة الآن</button>
+    </div>
+
+    <div id="backlog-card" class="daily-card" style="display:none; border-color: #e74c3c;">
+        <h4 style="color:#e74c3c;">⚠️ مهام فائتة</h4>
+        <p id="backlog-text" style="font-size: 0.9rem;">لديك أجزاء لم تكتمل من الأيام السابقة.</p>
+    </div>
+</div>
+
 </div>
 
 <audio id="notificationSound" src="https://www.soundjay.com/buttons/sounds/button-37a.mp3"></audio>
