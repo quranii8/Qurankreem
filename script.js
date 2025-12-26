@@ -908,4 +908,67 @@ function switchMainTab(t) {
         initNamesGrid();
     }
 }
+function switchMainTab(t) {
+    // 1. تحديث شكل الأزرار (Active State)
+    document.querySelectorAll('.main-nav button').forEach(b => b.classList.remove('active'));
+    const activeBtn = document.getElementById(t + 'Tab');
+    if (activeBtn) activeBtn.classList.add('active');
+
+    // 2. قائمة بجميع الأقسام الموجودة في موقعك
+    const allSections = [
+        'quran-section', 
+        'azkar-section', 
+        'sebha-section', 
+        'prayer-section', 
+        'qibla-section', 
+        'khatma-section', 
+        'names-section'
+    ];
+
+    // 3. إظهار القسم المختار وإخفاء البقية فوراً
+    allSections.forEach(s => {
+        const el = document.getElementById(s);
+        if (el) {
+            el.style.display = (s === t + '-section') ? 'block' : 'none';
+        }
+    });
+
+    // 4. تشغيل "المحركات" الخاصة بكل قسم (حل مشاكل التحديث)
+    
+    // أ- قسم أسماء الله الحسنى: بناء الشبكة فوراً
+    if (t === 'names') {
+        if (typeof initNamesGrid === 'function') initNamesGrid();
+    }
+    
+    // ب- قسم مواقيت الصلاة: طلب الموقع وتحديث الأوقات تلقائياً
+    if (t === 'prayer') {
+        if (typeof fetchPrayers === 'function') {
+            fetchPrayers(); // هذا السطر هو الذي يظهر طلب "السماح بالموقع"
+        }
+    }
+
+    // ج- قسم القبلة: تشغيل البوصلة وطلب الإذن
+    if (t === 'qibla') {
+        if (typeof getQibla === 'function') getQibla();
+    }
+
+    // د- قسم الختمة: تحديث البارات والعداد التنازلي والواجهة (ابدأ أو تابع)
+    if (t === 'khatma') {
+        if (typeof updateKhatmaUI === 'function') {
+            updateKhatmaUI();
+        }
+    }
+
+    // هـ- قسم القرآن: إعادة الضبط للواجهة الرئيسية عند الدخول
+    if (t === 'quran') {
+        const fullView = document.getElementById('full-quran-view');
+        if (fullView) fullView.style.display = 'block';
+        
+        const quranView = document.getElementById('quran-view');
+        if (quranView) quranView.style.display = 'none';
+        
+        const searchBox = document.querySelector('.search-box');
+        if (searchBox) searchBox.style.display = 'block';
+    }
+}
 
