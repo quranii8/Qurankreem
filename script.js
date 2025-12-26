@@ -635,7 +635,7 @@ function updateKhatmaUI() {
             startKhatmaTimer();
             }
     }
-
+}
 // 2. دالة البداية لأول مرة
 function initializeKhatma() {
     const today = new Date();
