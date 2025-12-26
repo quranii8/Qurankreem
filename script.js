@@ -415,13 +415,10 @@ function askCompassPermission() {
         DeviceOrientationEvent.requestPermission()
             .then(state => {
                 if (state === 'granted') {
-                    window.addEventListener('deviceorientation', handleCompass, true);
                 }
             }).catch(e => console.error(e));
     } else {
-        window.addEventListener('deviceorientationabsolute', handleCompass, true);
-        window.addEventListener('deviceorientation', handleCompass, true);
-    }
+         }
 }
 
 function handleCompass(e) {
@@ -479,7 +476,7 @@ function copyDailyAyah() {
 }
 
 // تشغيل الدالة تلقائياً عند تحميل الصفحة
-window.addEventListener('DOMContentLoaded', loadDailyAyah);
+
 
 // 1. طلب إذن الإشعارات من المستخدم
 function requestNotificationPermission() {
