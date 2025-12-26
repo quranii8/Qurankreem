@@ -862,6 +862,24 @@ function switchMainTab(t) {
         console.warn("إشعار: القسم يحتاج لتحميل البيانات أو وجود دالة مفقودة:", error);
     }
 }
+// --- 8. تشغيل المحركات عند تحميل الصفحة لأول مرة ---
+window.addEventListener('DOMContentLoaded', () => {
+    // تشغيل آية اليوم
+    loadDailyAyah();
+    // تشغيل عداد الصلاة إذا كان المستخدم في قسم الصلاة
+    fetchPrayers();
+    // تهيئة نظام الختمة
+    if (localStorage.getItem('khatmaProgress')) {
+        updateKhatmaUI();
+    }
+    // جعل قسم القرآن هو القسم الافتراضي عند الفتح
+    switchMainTab('quran');
+});
 
-// تعديل دالة السويتش لتشغيل القسم
-// تأكد من إضافة 'names-section' لمصفوفة الأقسام داخل دالة switchMainTab
+// إغلاق المودال عند الضغط خارجه (لأسماء الله الحسنى)
+window.onclick = function(event) {
+    const modal = document.getElementById('name-details-modal');
+    if (event.target == modal) {
+        closeNameDetails();
+    }
+}
