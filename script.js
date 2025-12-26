@@ -568,3 +568,57 @@ function showMain() {
     if(audio) audio.pause(); 
     if(playBtn) playBtn.innerText = "▷";
 }
+function switchMainTab(t) {
+    // 1. تحديث شكل الأزرار في القائمة العلوية
+    document.querySelectorAll('.main-nav button').forEach(b => {
+        b.classList.remove('active');
+    });
+    
+    // تأكد أن الـ ID الخاص بالزر يطابق (اسم القسم + Tab)
+    const activeTab = document.getElementById(t + 'Tab');
+    if (activeTab) {
+        activeTab.classList.add('active');
+    }
+
+    // 2. مصفوفة بكل الأقسام الرئيسية لضمان إخفاء غير المطلوب
+    const allSections = [
+        'quran-section', 
+        'azkar-section', 
+        'sebha-section', 
+        'prayer-section', 
+        'qibla-section'
+    ];
+
+    allSections.forEach(s => {
+        const el = document.getElementById(s);
+        if (el) {
+            // إظهار القسم إذا كان يبدأ بنفس اسم التاب المختار، وإخفاء الباقي
+            el.style.display = s.startsWith(t) ? 'block' : 'none';
+        }
+    });
+
+    // 3. تشغيل الدوال الخاصة بالأقسام التي تحتاج تحديث لحظي عند الفتح
+    if (t === 'qibla') {
+        if (typeof getQibla === 'function') {
+            getQibla(); // جلب إحداثيات القبلة
+        }
+    }
+    
+    if (t === 'prayer') {
+        if (typeof fetchPrayers === 'function') {
+            fetchPrayers(); // تحديث مواقيت الصلاة والعداد التنازلي
+        }
+    }
+
+    // 4. ملاحظة هامة للفهرس: عند الانتقال لقسم القرآن من زر خارجي
+    // نضمن دائماً ظهور المصحف الكامل وإخفاء الفهرس والقارئ كحالة افتراضية
+    if (t === 'quran') {
+        const fullView = document.getElementById('full-quran-view');
+        const topicsView = document.getElementById('topics-view');
+        const quranView = document.getElementById('quran-view');
+
+        if (fullView) fullView.style.display = 'block';
+        if (topicsView) topicsView.style.display = 'none';
+        if (quranView) quranView.style.display = 'none';
+    }
+}
