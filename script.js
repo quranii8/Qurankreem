@@ -884,27 +884,34 @@ window.onclick = function(event) {
 // دالة تسجيل الدخول والمزامنة
 window.loginAndSync = async function() {
     try {
-        const result = await signInWithPopup(auth, provider);
+        // دالة تسجيل الدخول والمزامنة باستخدام التحويل (Redirect)
+window.loginAndSync = function() {
+    // هذه الطريقة لا يحجبها المتصفح لأنها تفتح في نفس الصفحة
+    signInWithRedirect(auth, provider);
+};
+
+// هذا الكود يعمل تلقائياً عند العودة من صفحة جوجل للموقع
+import { getRedirectResult } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+getRedirectResult(auth).then(async (result) => {
+    if (result && result.user) {
         const user = result.user;
-        
-        // جلب بيانات الختمة من الـ localStorage اللي في كودك الأصلي
         const localData = localStorage.getItem('khatmaProgress');
         
         if (localData) {
-            // رفع البيانات لـ Firestore Database
+            // رفع البيانات للسحاب
             await setDoc(doc(db, "users", user.uid), {
                 khatma: JSON.parse(localData),
                 displayName: user.displayName,
                 lastSync: new Date()
             });
-            alert(`تمت المزامنة بنجاح يا ${user.displayName} ✅`);
-        } else {
-            alert("مسجل دخول، لكن لا توجد بيانات ختمة حالياً لحفظها.");
+            alert("تمت المزامنة بنجاح يا " + user.displayName + " ✅");
         }
-    } catch (error) {
-        console.error(error);
-        alert("حدث خطأ في المزامنة، تأكد من تفعيل Google في Firebase");
     }
+}).catch((error) => {
+    console.error("خطأ في المزامنة:", error);
+});
+
 };
 window.requestSystemNotify = function() {
     if (!("Notification" in window)) {
