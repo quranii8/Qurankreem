@@ -699,25 +699,37 @@ function switchMainTab(t) {
 let khatmaData = JSON.parse(localStorage.getItem('khatmaProgress')) || null;
 
 function updateKhatmaUI() {
+    // جلب البيانات من الذاكرة
+    khatmaData = JSON.parse(localStorage.getItem('khatmaProgress')) || null;
+
+    const startView = document.getElementById('start-khatma-view');
+    const activeView = document.getElementById('active-khatma-view');
+    const readingArea = document.getElementById('khatma-reading-area');
+
     if (!khatmaData) {
-        document.getElementById('start-khatma-view').style.display = 'block';
-        document.getElementById('active-khatma-view').style.display = 'none';
-        return;
+        // إذا لم يبدأ التحدي: اظهر زر البدء فقط
+        if(startView) startView.style.display = 'block';
+        if(activeView) activeView.style.display = 'none';
+        if(readingArea) readingArea.style.display = 'none';
+        
+        document.getElementById('totalKhatmaBar').style.width = "0%";
+        document.getElementById('total-percent-text').innerText = "التقدم الكلي: 0%";
+    } else {
+        // إذا التحدي نشط: اظهر تفاصيل التقدم
+        if(startView) startView.style.display = 'none';
+        if(activeView) activeView.style.display = 'block';
+        
+        document.getElementById('daily-task-title').innerText = `ورد اليوم (الجزء ${khatmaData.currentJuz})`;
+        document.getElementById('khatma-start-date').innerText = `تاريخ البدء: ${khatmaData.startDate}`;
+
+        const totalPercent = Math.round(((khatmaData.currentJuz - 1) / 30) * 100);
+        document.getElementById('totalKhatmaBar').style.width = totalPercent + "%";
+        document.getElementById('total-percent-text').innerText = `التقدم الكلي: ${totalPercent}%`;
+        
+        startKhatmaTimer();
     }
+}
 
-    document.getElementById('start-khatma-view').style.display = 'none';
-    document.getElementById('active-khatma-view').style.display = 'block';
-
-    // تحديث النصوص
-    document.getElementById('daily-task-title').innerText = `ورد اليوم (الجزء ${khatmaData.currentJuz})`;
-    document.getElementById('khatma-start-date').innerText = `تاريخ البدء: ${khatmaData.startDate}`;
-
-    // تحديث البار الكلي (الجزء الحالي من 30)
-    const totalPercent = Math.round(((khatmaData.currentJuz - 1) / 30) * 100);
-    document.getElementById('totalKhatmaBar').style.width = totalPercent + "%";
-    document.getElementById('total-percent-text').innerText = `التقدم الكلي: ${totalPercent}%`;
-
-    startKhatmaTimer();
 }
 
 // 2. دالة البداية لأول مرة
