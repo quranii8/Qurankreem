@@ -566,14 +566,21 @@ function selectQuranOption(option) {
 
 // 2. إضافة دالة عرض سور القسم المختار
 function showTopicSurahs(title, surahNumbers) {
-    document.getElementById('full-quran-view').style.display = 'block';
+    // 1. إظهار واجهة السور وإخفاء الفهرس
+    const fullView = document.getElementById('full-quran-view') || document.getElementById('main-view');
+    fullView.style.display = 'block';
     document.getElementById('topics-view').style.display = 'none';
     
-    // فلترة السور (تأكد أن allSurahs محملة)
+    // 2. فلترة السور
     const filtered = allSurahs.filter(s => surahNumbers.includes(parseInt(s.number)));
+    
+    // 3. عرضها (دالة displaySurahs الجديدة ستجعلها قابلة للضغط)
     displaySurahs(filtered);
     
-    document.getElementById('searchInput').value = "قسم: " + title;
+    // 4. تحديث نص البحث
+    const sInput = document.getElementById('searchInput') || document.getElementById('surahSearch');
+    if(sInput) sInput.value = "قسم: " + title;
+}
 }
 
 // 3. تعديل دالة العودية (showMain)
