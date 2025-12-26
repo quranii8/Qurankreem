@@ -579,23 +579,37 @@ function showTopicSurahs(title, surahNumbers) {
 
 // تعديل الدالة الأساسية لضمان عمل التبديل
 function selectQuranOption(option) {
+    // 1. إغلاق القائمة المنسدلة
     document.getElementById("quranDropdown").classList.remove("show-dropdown");
+    
+    // 2. تفعيل القسم الرئيسي (القرآن)
     switchMainTab('quran');
 
+    // 3. التحكم في الأقسام الفرعية (مهم جداً استخدام هذه الأسطر)
     const fullView = document.getElementById('full-quran-view');
     const topicsView = document.getElementById('topics-view');
-    const clearBtn = document.getElementById('clearFilter');
 
     if (option === 'quran') {
-        fullView.style.display = 'block';
-        topicsView.style.display = 'none';
-        if(clearBtn) clearBtn.remove(); // مسح الفلترة عند العودة للكل
-        displaySurahs(allSurahs); 
-        document.getElementById('surahSearch').value = '';
-        showMain();
+        fullView.style.setProperty('display', 'block', 'important');
+        topicsView.style.setProperty('display', 'none', 'important');
+        showMain(); // للعودة للقائمة الرئيسية للسور
     } else if (option === 'topics') {
-        fullView.style.display = 'none';
-        topicsView.style.display = 'block';
+        fullView.style.setProperty('display', 'none', 'important');
+        topicsView.style.setProperty('display', 'block', 'important');
+        // في حال كان القارئ مفتوحاً، نخفيه لنظهر الفهرس
+        document.getElementById('surah-detail').style.display = 'none';
     }
 }
 
+// دالة عرض السور المفلترة (تأكد من وجودها)
+function showTopicSurahs(title, surahNumbers) {
+    const fullView = document.getElementById('full-quran-view');
+    const topicsView = document.getElementById('topics-view');
+    
+    fullView.style.display = 'block';
+    topicsView.style.display = 'none';
+    
+    document.getElementById('surahSearch').value = "قسم: " + title;
+    const filtered = allSurahs.filter(s => surahNumbers.includes(s.number));
+    displaySurahs(filtered);
+}
