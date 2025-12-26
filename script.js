@@ -64,9 +64,11 @@ function openSurah(id, name) {
 
 
 function showMain() { 
-    document.getElementById('main-view').style.display = 'block'; 
+    const fullView = document.getElementById('full-quran-view') || document.getElementById('main-view');
+    fullView.style.display = 'block'; 
     document.getElementById('quran-view').style.display = 'none'; 
-    audio.pause(); 
+    document.getElementById('topics-view').style.display = 'none'; 
+    if(audio) audio.pause(); 
     if(playBtn) playBtn.innerText = "▷";
 }
 
