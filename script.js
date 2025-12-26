@@ -27,8 +27,14 @@ fetch('https://api.alquran.cloud/v1/surah').then(res => res.json()).then(data =>
 
 function displaySurahs(surahs) { 
     const list = document.getElementById('surahList');
-    list.innerHTML = surahs.map(s => `<div class="surah-card" onclick="openSurah(${s.number}, '${s.name}')">${s.number}. ${s.name}</div>`).join(''); 
+    if(!list) return;
+    list.innerHTML = surahs.map(s => `
+        <div class="surah-card" onclick="openSurah(${s.number}, '${s.name}')" style="cursor:pointer;">
+            ${s.number}. ${s.name}
+        </div>
+    `).join(''); 
 }
+
 
 function filterSurahs() { 
     const term = document.getElementById('searchInput').value; 
