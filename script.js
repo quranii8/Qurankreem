@@ -37,19 +37,27 @@ function filterSurahs() {
 
 function openSurah(id, name) {
     currentSurahId = id;
+    // إغلاق القائمة الجانبية إذا كانت مفتوحة
     document.getElementById('sideMenu').classList.remove('open');
     
-    // هذا السطر هو اللي بيحل المشكلة: بيخفي القائمة ويفتح السورة
+    // إخفاء قائمة السور والفهرس الموضوعي
     document.getElementById('full-quran-view').style.display = 'none';
     document.getElementById('topics-view').style.display = 'none';
-    document.getElementById('quran-view').style.display = 'block';
     
+    // إظهار واحة عرض السورة (الآيات والمشغل)
+    document.getElementById('quran-view').style.display = 'block';
     document.getElementById('current-surah-title').innerText = name;
+    
     updateAudioSource();
+    
+    // جلب الآيات من الرابط
     fetch(`https://api.alquran.cloud/v1/surah/${id}`).then(res => res.json()).then(data => {
-        document.getElementById('ayahsContainer').innerHTML = data.data.ayahs.map(a => `${a.text} <span style="color:var(--gold); font-size: 1.1rem;">(${a.numberInSurah})</span>`).join(' ');
+        document.getElementById('ayahsContainer').innerHTML = data.data.ayahs.map(a => 
+            `${a.text} <span style="color:var(--gold); font-size: 1.1rem;">(${a.numberInSurah})</span>`
+        ).join(' ');
     });
 }
+
 
 
 function showMain() { 
