@@ -347,4 +347,24 @@ body.dark-mode .daily-text {
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(201, 176, 122, 0.4);
 }
+/* دعم الوضع المظلم لقسم الختمة */
+body.dark-mode .daily-card {
+    background-color: #1a1a1a !important; /* لون خلفية الكارد */
+    color: #ffffff !important;
+}
+
+body.dark-mode #khatma-ayahs-display {
+    background-color: #262626 !important; /* لون خلفية منطقة الآيات */
+    color: #e0e0e0 !important;
+    border-color: var(--gold) !important;
+}
+
+body.dark-mode .ayah-mark {
+    border-color: #444 !important;
+}
+
+body.dark-mode #juz-progress-text, 
+body.dark-mode #total-percent-text {
+    color: #b0b0b0 !important;
+}
 
