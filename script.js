@@ -663,3 +663,46 @@ function switchMainTab(t) {
         if (quranView) quranView.style.display = 'none';
     }
 }
+// بيانات الختمة
+let khatmaData = JSON.parse(localStorage.getItem('khatmaProgress')) || {
+    currentJuz: 1,
+    currentAyahIndex: 0, // لحفظ التقدم داخل الجزء
+    completedDays: [],
+    lastUpdate: new Date().toDateString()
+};
+
+function updateKhatmaUI() {
+    const now = new Date();
+    const today = now.toDateString();
+
+    // فحص إذا مر يوم جديد (الساعة 12 ليلاً)
+    if (khatmaData.lastUpdate !== today) {
+        // إذا لم يكمل الجزء السابق، يظهر في المتراكم
+        checkBacklog();
+        khatmaData.lastUpdate = today;
+        saveKhatma();
+    }
+
+    // حساب النسب
+    const totalProgress = ((khatmaData.currentJuz - 1) / 30) * 100;
+    document.getElementById('totalKhatmaBar').style.width = totalProgress + "%";
+    document.getElementById('total-percent-text').innerText = `التقدم الكلي: ${Math.round(totalProgress)}%`;
+    
+    // تحديث ورد اليوم
+    document.getElementById('daily-task-title').innerText = `ورد اليوم (الجزء ${khatmaData.currentJuz})`;
+    
+    // تغيير لون البار إذا اكتمل الورد
+    if (totalProgress >= 100) {
+        document.getElementById('totalKhatmaBar').style.background = "var(--success)";
+    }
+}
+
+// دالة لحفظ التقدم عند قراءة آية
+function trackReadingProgress(ayahNumber) {
+    // منطق برمجي يربط رقم الآية بمقدار التقدم في الجزء
+    // سيتم استدعاء هذه الدالة داخل openSurah
+}
+
+function saveKhatma() {
+    localStorage.setItem('khatmaProgress', JSON.stringify(khatmaData));
+}
