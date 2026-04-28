@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Chess</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body {
+      width: 100%; height: 100%;
+      background: radial-gradient(ellipse at 40% 30%, #1e1208 0%, #0a0804 70%);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      overflow: hidden;
+      user-select: none;
+    }
+    #wrap {
+      display: flex; flex-direction: column;
+      align-items: center; gap: 14px;
+    }
+    #player-black, #player-white {
+      display: flex; align-items: center; gap: 10px;
+      color: #9a8060; font-family: Georgia, serif;
+      font-size: 0.9rem; letter-spacing: 2px;
+    }
+    #player-black .dot { width: 10px; height: 10px; border-radius: 50%; background: #2a2a2a; border: 1px solid #666; }
+    #player-white .dot { width: 10px; height: 10px; border-radius: 50%; background: #e8e0d0; border: 1px solid #888; }
+    #status {
+      font-family: Georgia, serif; font-size: 1rem;
+      letter-spacing: 3px; text-transform: uppercase;
+      padding: 6px 18px; border-radius: 20px;
+      transition: all 0.3s;
+    }
+    #status.white  { color: #f0e8d8; text-shadow: 0 0 12px rgba(240,232,216,0.5); background: rgba(255,255,255,0.06); }
+    #status.black  { color: #b8a080; text-shadow: 0 0 12px rgba(184,160,128,0.5); background: rgba(255,255,255,0.04); }
+    #status.check  { color: #ff6644; text-shadow: 0 0 16px rgba(255,100,68,0.7);  background: rgba(255,80,40,0.1); }
+    #status.end    { color: #d4af37; text-shadow: 0 0 20px rgba(212,175,55,0.8);  background: rgba(212,175,55,0.1); }
+    canvas { display: block; cursor: pointer; border-radius: 4px; }
+    #hint { color: #4a4030; font-family: Georgia, serif; font-size: 0.72rem; letter-spacing: 1px; }
+  </style>
+</head>
+<body>
+<div id="wrap">
+  <div id="player-black"><div class="dot"></div><span>BLACK</span></div>
+  <canvas id="c"></canvas>
+  <div id="player-white"><div class="dot"></div><span>WHITE</span></div>
+  <div id="status" class="white">White's Turn</div>
+  <div id="hint">Click piece → click square to move</div>
+</div>
+
+<script>
+// ─── CONSTANTS ──────────────────────────────────────────────────────────────
+const SPRITE_URL = 'https://res.cloudinary.com/dtz0urit6/image/upload/f_jpg,q_auto/cloudinary-tools-uploads/brkktbomiuljid0p8u0p.jpg';
+// Try background-removed PNG first (Cloudinary AI feature)
+const SPRITE_PNG  = 'https://res.cloudinary.com/dtz0urit6/image/upload/e_background_removal,f_png/cloudinary-tools-uploads/brkktbomiuljid0p8u0p.jpg';
+
+// Piece type indices  — must match sprite column order
+const K=0, Q=1, R=2, B=3, N=4, P=5;
+const W=0, BK=1; // colors
+
+// Column order in sprite sheet: K Q R B N P (most common)
+// If your sprite has a different order, change this mapping
+// spriteCol[pieceType] = column index in sprite sheet
+const SPRITE_COL = [0, 1, 2, 3, 4, 5]; // K→0 Q→1 R→2 B→3 N→4 P→5
+
+// ─── CANVAS SETUP ────────────────────────────────────────────────────────────
+const canvas = document.getElementById('c');
+const ctx    = canvas.getContext('2d');
+const VPW    = Math.min(window.innerWidth, 520);
+const VPH    = Math.min(window.innerHeight - 160, 520);
+const TOTAL  = Math.floor(Math.min(VPW, VPH) / 8) * 8; // multiple of 8
+const SQ     = TOTAL / 8;
+const PAD    = Math.max(22, Math.floor(SQ * 0.32)); // border for coords
+canvas.width  = TOTAL + PAD * 2;
+canvas.height = TOTAL + PAD * 2;
+canvas.style.width  = canvas.width  + 'px';
+canvas.style.height = canvas.height + 'px';
+
+// ─── COLORS ──────────────────────────────────────────────────────────────────
+const C_LIGHT   = '#F0D9B5';
+const C_DARK    = '#B58863';
+const C_SEL     = 'rgba(15,80,25,0.72)';
+const C_LASTMV  = 'rgba(155,199,0,0.38)';
+const C_DOT     = 'rgba(15,80,25,0.46)';
+const C_RING    = 'rgba(15,80,25,0.62)';
+const C_CHECK   = 'rgba(220,30,10,0.52)';
+
+// ─── GAME STATE ──────────────────────────────────────────────────────────────
+let board      = [];   // [8][8] → null | {color,type}
+let turn       = W;
+let selected   = null; // {row,col}
+let legalMoves = [];   // [{row,col,...}]
+let lastMove   = null; // {from:{row,col}, to:{row,col}}
+let enPassant  = null; // {row,col} target square for en-passant capture
+let castleRights = { wK:true, wKR:true, wQR:true, bK:true, bKR:true, bQR:true };
+let gameOver   = false;
+
+// ─── SPRITE STATE ────────────────────────────────────────────────────────────
+let spriteImg  = null;
+let spriteRows = 2; // detected
+let spriteCols = 6; // detected
+let whiteRow   = 0; // detected: 0 or 1
+let hasBg      = true; // whether sprite has non-transparent background
+let bgColor    = null; // { r,g,b } background color to mask
+
+// ─── BOARD INIT ──────────────────────────────────────────────────────────────
+function initBoard() {
+  board = Array.from({length:8}, () => Array(8).fill(null));
+  const back = [R, N, B, Q, K, B, N, R];
+  for (let c=0; c<8; c++) {
+    board[0][c] = {color:BK, type:back[c]};
+    board[1][c] = {color:BK, type:P};
+    board[6][c] = {color:W,  type:P};
+    board[7][c] = {color:W,  type:back[c]};
+  }
+}
+
+// ─── SPRITE LOADING ──────────────────────────────────────────────────────────
+function loadSprite() {
+  return new Promise(resolve => {
+    // Try background-removed PNG first, then original JPG
+    let tried = 0;
+    const urls = [SPRITE_PNG, SPRITE_URL];
+
+    function tryLoad(url) {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => {
+        spriteImg = img;
+        detectSpriteLayout();
+        detectBackground();
+        resolve(true);
+      };
+      img.onerror = () => {
+        tried++;
+        if (tried < urls.length) tryLoad(urls[tried]);
+        else resolve(false); // continue with Unicode fallback
+      };
+      img.src = url;
+    }
+    tryLoad(urls[0]);
+  });
+}
+
+function detectSpriteLayout() {
+  const ratio = spriteImg.width / spriteImg.height;
+  if (ratio >= 5) {
+    // Single row with 12 pieces: wK wQ wR wB wN wP  bK bQ bR bB bN bP
+    spriteRows = 1; spriteCols = 12;
+    whiteRow = 0; // white pieces start at col 0, black at col 6
+  } else {
+    // Two rows × 6 cols
+    spriteRows = 2; spriteCols = 6;
+    // Auto-detect which row is white by sampling brightness
+    whiteRow = detectWhiteRow();
+  }
+}
+
+function detectWhiteRow() {
+  // Sample center pixel of King in each row; brighter = white pieces
+  const tmp = document.createElement('canvas');
+  tmp.width = spriteImg.width; tmp.height = spriteImg.height;
+  const tc = tmp.getContext('2d');
+  tc.drawImage(spriteImg, 0, 0);
+  const sw = spriteImg.width / spriteCols;
+  const sh = spriteImg.height / spriteRows;
+  const sample = (row, col) => {
+    const px = tc.getImageData(col*sw + sw/2|0, row*sh + sh/2|0, 1, 1).data;
+    return (px[0] + px[1] + px[2]) / 3;
+  };
+  const b0 = sample(0, 0); // brightness of row-0 King center
+  const b1 = sample(1, 0); // brightness of row-1 King center
+  return b0 > b1 ? 0 : 1; // brighter row = white pieces
+}
+
+function detectBackground() {
+  // Sample corner pixel of sprite to find background color
+  const tmp = document.createElement('canvas');
+  tmp.width = spriteImg.width; tmp.height = spriteImg.height;
+  const tc = tmp.getContext('2d');
+  tc.drawImage(spriteImg, 0, 0);
+  const px = tc.getImageData(2, 2, 1, 1).data;
+  // Transparent?
+  if (px[3] < 128) { hasBg = false; return; }
+  hasBg = true;
+  bgColor = { r: px[0], g: px[1], b: px[2] };
+}
+
+function getSpriteRect(color, type) {
+  if (!spriteImg) return null;
+  const sw = spriteImg.width  / spriteCols;
+  const sh = spriteImg.height / spriteRows;
+  let row, col;
+  if (spriteRows === 1) {
+    // 12-column layout
+    row = 0;
+    col = (color === W ? 0 : 6) + SPRITE_COL[type];
+  } else {
+    row = (color === W) ? whiteRow : 1 - whiteRow;
+    col = SPRITE_COL[type];
+  }
+  return { sx: col*sw, sy: row*sh, sw, sh };
+}
+
+// ─── DRAWING ─────────────────────────────────────────────────────────────────
+function render() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  drawBoardFrame();
+  drawSquares();
+  drawCoords();
+  drawPieces();
+}
+
+function drawBoardFrame() {
+  // Table surface
+  ctx.fillStyle = '#100a04';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Outer glow/shadow for the board
+  ctx.shadowColor = 'rgba(0,0,0,0.9)';
+  ctx.shadowBlur = PAD * 1.5;
+  ctx.shadowOffsetX = 4; ctx.shadowOffsetY = 8;
+
+  // Gold border
+  const gx = PAD - 5, gy = PAD - 5;
+  const gw = TOTAL + 10, gh = TOTAL + 10;
+  const grad = ctx.createLinearGradient(gx, gy, gx+gw, gy+gh);
+  grad.addColorStop(0,   '#c8a035');
+  grad.addColorStop(0.25,'#f0d060');
+  grad.addColorStop(0.5, '#8B6010');
+  grad.addColorStop(0.75,'#f0d060');
+  grad.addColorStop(1,   '#c8a035');
+  ctx.fillStyle = grad;
+  roundRect(ctx, gx-3, gy-3, gw+6, gh+6, 6); ctx.fill();
+
+  ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0;
+
+  // Dark inner trim
+  ctx.fillStyle = '#2a1a08';
+  roundRect(ctx, gx, gy, gw, gh, 3); ctx.fill();
+}
+
+function drawSquares() {
+  for (let r=0; r<8; r++) {
+    for (let c=0; c<8; c++) {
+      const x = PAD + c*SQ, y = PAD + r*SQ;
+      const light = (r+c) % 2 === 0;
+
+      // Base square
+      ctx.fillStyle = light ? C_LIGHT : C_DARK;
+      ctx.fillRect(x, y, SQ, SQ);
+
+      // Last-move tint
+      if (lastMove && (
+        (lastMove.from.row===r && lastMove.from.col===c) ||
+        (lastMove.to.row===r   && lastMove.to.col===c)
+      )) {
+        ctx.fillStyle = C_LASTMV;
+        ctx.fillRect(x, y, SQ, SQ);
+      }
+
+      // Check highlight on king
+      const p = board[r][c];
+      if (p && p.type===K && p.color===turn && isInCheck(board, turn)) {
+        ctx.fillStyle = C_CHECK;
+        ctx.fillRect(x, y, SQ, SQ);
+      }
+
+      // Selected square
+      if (selected && selected.row===r && selected.col===c) {
+        ctx.fillStyle = C_SEL;
+        ctx.fillRect(x, y, SQ, SQ);
+      }
+
+      // Legal move indicators
+      const isLegal = legalMoves.some(m => m.row===r && m.col===c);
+      if (isLegal) {
+        const cx2 = x + SQ/2, cy2 = y + SQ/2;
+        if (board[r][c]) {
+          // Capture ring
+          ctx.beginPath();
+          ctx.arc(cx2, cy2, SQ/2 - 3, 0, Math.PI*2);
+          ctx.strokeStyle = C_RING; ctx.lineWidth = Math.max(3, SQ*0.07);
+          ctx.stroke();
+        } else {
+          // Move dot
+          ctx.beginPath();
+          ctx.arc(cx2, cy2, SQ*0.16, 0, Math.PI*2);
+          ctx.fillStyle = C_DOT; ctx.fill();
+        }
+      }
+    }
+  }
+}
+
+function drawCoords() {
+  const sz = Math.max(9, SQ*0.21);
+  ctx.font = `bold ${sz}px Georgia`;
+  for (let i=0; i<8; i++) {
+    const light = (i+0) % 2 === 0;
+    // Rank numbers (left edge, inside square)
+    ctx.fillStyle = light ? C_DARK : C_LIGHT;
+    ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+    ctx.fillText(String(8-i), PAD+2, PAD + i*SQ + 2);
+    // File letters (bottom edge, inside square)
+    ctx.fillStyle = (i+8)%2===0 ? C_DARK : C_LIGHT;
+    ctx.textAlign = 'right'; ctx.textBaseline = 'bottom';
+    ctx.fillText('abcdefgh'[i], PAD + (i+1)*SQ - 2, PAD + 8*SQ - 2);
+  }
+}
+
+function drawPieces() {
+  // Draw pieces in two passes: shadows first, then pieces (avoids shadow-on-pieces artifacts)
+  for (let r=0; r<8; r++) {
+    for (let c=0; c<8; c++) {
+      if (board[r][c]) drawContactShadow(r, c);
+    }
+  }
+  for (let r=0; r<8; r++) {
+    for (let c=0; c<8; c++) {
+      if (board[r][c]) drawPieceSprite(board[r][c], r, c);
+    }
+  }
+}
+
+// The contact shadow — the key to the "sitting on board" illusion
+function drawContactShadow(row, col) {
+  const bx = PAD + col*SQ;
+  const by = PAD + row*SQ;
+  const cx = bx + SQ/2;
+  const shadowY = by + SQ*0.86;
+
+  ctx.save();
+  // Flatten transform to create an ellipse by scaling Y
+  ctx.transform(1, 0, 0, 0.22, 0, shadowY * (1 - 0.22));
+  const g = ctx.createRadialGradient(cx, shadowY, 0, cx, shadowY, SQ*0.40);
+  g.addColorStop(0,   'rgba(0,0,0,0.65)');
+  g.addColorStop(0.45,'rgba(0,0,0,0.30)');
+  g.addColorStop(1,   'rgba(0,0,0,0)');
+  ctx.beginPath();
+  ctx.arc(cx, shadowY, SQ*0.40, 0, Math.PI*2);
+  ctx.fillStyle = g;
+  ctx.fill();
+  ctx.restore();
+}
+
+function drawPieceSprite(piece, row, col) {
+  const bx  = PAD + col*SQ;
+  const by  = PAD + row*SQ;
+  const cx  = bx + SQ/2;
+  const pSz = SQ * 0.84;                    // piece render size
+  const px  = cx  - pSz/2;
+  const py  = by  + SQ/2 - pSz/2 - SQ*0.05; // lift piece upward slightly
+
+  ctx.save();
+
+  // Drop shadow (directional light from upper-left)
+  ctx.shadowColor    = 'rgba(0,0,0,0.70)';
+  ctx.shadowBlur     = SQ * 0.14;
+  ctx.shadowOffsetX  = SQ * 0.05;
+  ctx.shadowOffsetY  = SQ * 0.09;
+
+  if (spriteImg) {
+    const rect = getSpriteRect(piece.color, piece.type);
+    if (rect) {
+      if (hasBg && bgColor) {
+        // Mask out background by drawing with 'multiply' blend
+        // This makes white/light backgrounds transparent on non-white board
+        drawPieceWithMaskedBg(ctx, rect, px, py, pSz, piece);
+      } else {
+        // PNG with transparency — draw directly
+        ctx.drawImage(spriteImg, rect.sx, rect.sy, rect.sw, rect.sh, px, py, pSz, pSz);
+      }
+    } else {
+      drawUnicodePiece(piece, cx, by + SQ/2 - SQ*0.05, SQ);
+    }
+  } else {
+    drawUnicodePiece(piece, cx, by + SQ/2 - SQ*0.05, SQ);
+  }
+  ctx.restore();
+
+  // Subtle rim highlight (top-left arc of piece = lit by ambient light)
+  if (spriteImg) {
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(cx, by + SQ/2 - SQ*0.05, pSz/2 * 0.92, 0, Math.PI*2);
+    const rim = ctx.createRadialGradient(
+      cx - pSz*0.25, by + SQ/2 - SQ*0.05 - pSz*0.2, pSz*0.1,
+      cx, by + SQ/2 - SQ*0.05, pSz/2 * 0.92
+    );
+    rim.addColorStop(0,    'rgba(255,255,255,0)');
+    rim.addColorStop(0.78, 'rgba(255,255,255,0)');
+    rim.addColorStop(0.88, 'rgba(255,255,255,0.14)');
+    rim.addColorStop(1,    'rgba(0,0,0,0.28)');
+    ctx.strokeStyle = rim;
+    ctx.lineWidth = pSz * 0.04;
+    ctx.stroke();
+    ctx.restore();
+  }
+}
+
+// Render a piece sprite while masking its solid background color
+function drawPieceWithMaskedBg(ctx, rect, dx, dy, dSz, piece) {
+  // Offscreen canvas for the sprite tile
+  const oc = document.createElement('canvas');
+  oc.width = dSz | 0; oc.height = dSz | 0;
+  const oc2 = oc.getContext('2d');
+  oc2.drawImage(spriteImg, rect.sx, rect.sy, rect.sw, rect.sh, 0, 0, dSz, dSz);
+
+  // Mask by removing pixels close to background color
+  const id = oc2.getImageData(0, 0, dSz, dSz);
+  const d  = id.data;
+  const br = bgColor.r, bg2 = bgColor.g, bb = bgColor.b;
+  const thresh = 38; // color distance threshold
+  for (let i=0; i<d.length; i+=4) {
+    const dr = d[i]-br, dg2 = d[i+1]-bg2, db2 = d[i+2]-bb;
+    const dist = Math.sqrt(dr*dr + dg2*dg2 + db2*db2);
+    if (dist < thresh) {
+      d[i+3] = 0; // transparent
+    } else if (dist < thresh*1.8) {
+      d[i+3] = Math.round((dist - thresh) / (thresh*0.8) * 255);
+    }
+  }
+  oc2.putImageData(id, 0, 0);
+  ctx.drawImage(oc, dx, dy);
+}
+
+// Unicode fallback when sprite fails to load
+const UNICODE = [
+  ['♔','♕','♖','♗','♘','♙'], // W
+  ['♚','♛','♜','♝','♞','♟']  // BK
+];
+function drawUnicodePiece(piece, cx, cy, sq) {
+  ctx.font = `${sq*0.68}px serif`;
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  const ch = UNICODE[piece.color][piece.type];
+  if (piece.color === W) {
+    ctx.fillStyle = '#f5efe0';
+    ctx.strokeStyle = '#44332a'; ctx.lineWidth = sq*0.025;
+    ctx.strokeText(ch, cx, cy);
+  } else {
+    ctx.fillStyle = '#1a1208';
+    ctx.strokeStyle = '#a08050'; ctx.lineWidth = sq*0.025;
+    ctx.strokeText(ch, cx, cy);
+  }
+  ctx.fillText(ch, cx, cy);
+}
+
+// ─── CHESS LOGIC ─────────────────────────────────────────────────────────────
+
+// Returns all squares attacked by byColor (accurate, for check detection)
+function isSquareAttacked(brd, row, col, byColor) {
+  const dir = byColor === W ? 1 : -1; // pawns of byColor attack upward/downward
+  // Pawn attacks
+  for (const dc of [-1, 1]) {
+    const pr = row + dir, pc = col + dc;
+    if (inBounds(pr,pc)) {
+      const p = brd[pr][pc];
+      if (p && p.color===byColor && p.type===P) return true;
+    }
+  }
+  // Knight attacks
+  for (const [dr,dc] of [[-2,-1],[-2,1],[-1,-2],[-1,2],[1,-2],[1,2],[2,-1],[2,1]]) {
+    const nr=row+dr, nc=col+dc;
+    if (inBounds(nr,nc)) {
+      const p=brd[nr][nc]; if (p && p.color===byColor && p.type===N) return true;
+    }
+  }
+  // King attacks
+  for (const [dr,dc] of [[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]]) {
+    const kr=row+dr, kc=col+dc;
+    if (inBounds(kr,kc)) {
+      const p=brd[kr][kc]; if (p && p.color===byColor && p.type===K) return true;
+    }
+  }
+  // Bishop / Queen (diagonal)
+  for (const [dr,dc] of [[-1,-1],[-1,1],[1,-1],[1,1]]) {
+    let r=row+dr, c=col+dc;
+    while (inBounds(r,c)) {
+      const p=brd[r][c];
+      if (p) { if (p.color===byColor && (p.type===B||p.type===Q)) return true; break; }
+      r+=dr; c+=dc;
+    }
+  }
+  // Rook / Queen (straight)
+  for (const [dr,dc] of [[-1,0],[1,0],[0,-1],[0,1]]) {
+    let r=row+dr, c=col+dc;
+    while (inBounds(r,c)) {
+      const p=brd[r][c];
+      if (p) { if (p.color===byColor && (p.type===R||p.type===Q)) return true; break; }
+      r+=dr; c+=dc;
+    }
+  }
+  return false;
+}
+
+function isInCheck(brd, color) {
+  for (let r=0; r<8; r++) for (let c=0; c<8; c++) {
+    const p=brd[r][c]; if (p && p.color===color && p.type===K) return isSquareAttacked(brd,r,c,1-color);
+  }
+  return false;
+}
+
+function inBounds(r,c) { return r>=0 && r<8 && c>=0 && c<8; }
+
+// Generate pseudo-legal moves (ignores self-check)
+function pseudoMoves(brd, row, col) {
+  const piece = brd[row][col];
+  if (!piece) return [];
+  const {color, type} = piece;
+  const moves = [];
+  const opp = 1 - color;
+  const dir = color===W ? -1 : 1;
+
+  const slide = (dr, dc) => {
+    let r=row+dr, c=col+dc;
+    while (inBounds(r,c)) {
+      const t=brd[r][c];
+      if (!t) { moves.push({row:r,col:c}); }
+      else { if (t.color===opp) moves.push({row:r,col:c}); break; }
+      r+=dr; c+=dc;
+    }
+  };
+  const step = (dr, dc) => {
+    const r=row+dr, c=col+dc;
+    if (inBounds(r,c) && (!brd[r][c] || brd[r][c].color===opp)) moves.push({row:r,col:c});
+  };
+
+  switch(type) {
+    case P: {
+      const nr = row+dir;
+      // Forward
+      if (inBounds(nr,col) && !brd[nr][col]) {
+        moves.push({row:nr,col});
+        // Double push
+        const start = color===W ? 6 : 1;
+        if (row===start && !brd[nr+dir]?.[col]) moves.push({row:nr+dir,col});
+      }
+      // Diagonal capture
+      for (const dc of [-1,1]) {
+        const nc = col+dc;
+        if (inBounds(nr,nc)) {
+          if (brd[nr][nc] && brd[nr][nc].color===opp) moves.push({row:nr,col:nc});
+          // En passant
+          if (enPassant && enPassant.row===nr && enPassant.col===nc) moves.push({row:nr,col:nc,enPassant:true});
+        }
+      }
+      break;
+    }
+    case N: for (const [dr,dc] of [[-2,-1],[-2,1],[-1,-2],[-1,2],[1,-2],[1,2],[2,-1],[2,1]]) step(dr,dc); break;
+    case B: for (const d of [[-1,-1],[-1,1],[1,-1],[1,1]]) slide(d[0],d[1]); break;
+    case R: for (const d of [[-1,0],[1,0],[0,-1],[0,1]]) slide(d[0],d[1]); break;
+    case Q: for (const d of [[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]]) slide(d[0],d[1]); break;
+    case K: {
+      for (const d of [[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]]) step(d[0],d[1]);
+      // Castling
+      const hr = color===W ? 7 : 0;
+      if (row===hr && col===4 && !isSquareAttacked(brd,hr,4,opp)) {
+        const ck = color===W ? 'wK' : 'bK';
+        if (castleRights[ck]) {
+          const kr = color===W ? 'wKR' : 'bKR';
+          const qr = color===W ? 'wQR' : 'bQR';
+          // Kingside
+          if (castleRights[kr] && !brd[hr][5] && !brd[hr][6] &&
+              !isSquareAttacked(brd,hr,5,opp) && !isSquareAttacked(brd,hr,6,opp))
+            moves.push({row:hr,col:6,castle:'K'});
+          // Queenside
+          if (castleRights[qr] && !brd[hr][3] && !brd[hr][2] && !brd[hr][1] &&
+              !isSquareAttacked(brd,hr,3,opp) && !isSquareAttacked(brd,hr,2,opp))
+            moves.push({row:hr,col:2,castle:'Q'});
+        }
+      }
+      break;
+    }
+  }
+  return moves;
+}
+
+function getLegalMoves(row, col) {
+  const piece = board[row][col];
+  if (!piece || piece.color!==turn) return [];
+  return pseudoMoves(board, row, col).filter(mv => {
+    const sim = board.map(r => r.map(p => p ? {...p} : null));
+    sim[mv.row][mv.col] = sim[row][col];
+    sim[row][col] = null;
+    if (mv.enPassant) sim[row][mv.col] = null;
+    if (mv.castle==='K') { const hr=piece.color===W?7:0; sim[hr][5]=sim[hr][7]; sim[hr][7]=null; }
+    if (mv.castle==='Q') { const hr=piece.color===W?7:0; sim[hr][3]=sim[hr][0]; sim[hr][0]=null; }
+    return !isInCheck(sim, piece.color);
+  });
+}
+
+function makeMove(from, to, mv) {
+  const piece = board[from.row][from.col];
+  lastMove = {from, to};
+
+  // En passant capture
+  if (mv.enPassant) board[from.row][to.col] = null;
+
+  // Castling — move rook
+  if (mv.castle) {
+    const hr = piece.color===W ? 7 : 0;
+    if (mv.castle==='K') { board[hr][5]=board[hr][7]; board[hr][7]=null; }
+    else                  { board[hr][3]=board[hr][0]; board[hr][0]=null; }
+  }
+
+  // Update castling rights
+  if (piece.type===K) {
+    if (piece.color===W) { castleRights.wK=castleRights.wKR=castleRights.wQR=false; }
+    else                  { castleRights.bK=castleRights.bKR=castleRights.bQR=false; }
+  }
+  if (piece.type===R) {
+    if (piece.color===W) { if (from.col===0) castleRights.wQR=false; if (from.col===7) castleRights.wKR=false; }
+    else                  { if (from.col===0) castleRights.bQR=false; if (from.col===7) castleRights.bKR=false; }
+  }
+
+  // New en passant target
+  enPassant = null;
+  if (piece.type===P && Math.abs(to.row-from.row)===2)
+    enPassant = {row:(from.row+to.row)/2, col:from.col};
+
+  // Place piece
+  board[to.row][to.col] = piece;
+  board[from.row][from.col] = null;
+
+  // Promotion — auto-queen
+  if (piece.type===P && (to.row===0||to.row===7))
+    board[to.row][to.col] = {color:piece.color, type:Q};
+
+  turn = 1 - turn;
+  updateStatus();
+}
+
+function updateStatus() {
+  const el = document.getElementById('status');
+  let hasAny = false;
+  outer: for (let r=0; r<8; r++) for (let c=0; c<8; c++) {
+    if (board[r][c] && board[r][c].color===turn && getLegalMoves(r,c).length>0) { hasAny=true; break outer; }
+  }
+  if (!hasAny) {
+    gameOver = true;
+    if (isInCheck(board,turn)) {
+      const w = turn===W ? 'Black' : 'White';
+      el.textContent = `${w} wins — Checkmate!`;
+    } else {
+      el.textContent = 'Stalemate — Draw';
+    }
+    el.className = 'end'; return;
+  }
+  if (isInCheck(board, turn)) {
+    el.textContent = `${turn===W?'White':'Black'}'s Turn — Check!`;
+    el.className = 'check';
+  } else {
+    el.textContent = `${turn===W?'White':'Black'}'s Turn`;
+    el.className = turn===W ? 'white' : 'black';
+  }
+}
+
+// ─── INTERACTION ─────────────────────────────────────────────────────────────
+canvas.addEventListener('click', e => {
+  if (gameOver) return;
+  const rect = canvas.getBoundingClientRect();
+  const sx = canvas.width  / rect.width;
+  const sy = canvas.height / rect.height;
+  const mx = (e.clientX - rect.left) * sx;
+  const my = (e.clientY - rect.top)  * sy;
+  const col = Math.floor((mx - PAD) / SQ);
+  const row = Math.floor((my - PAD) / SQ);
+  if (col<0||col>7||row<0||row>7) return;
+
+  if (selected) {
+    const mv = legalMoves.find(m => m.row===row && m.col===col);
+    if (mv) {
+      makeMove(selected, {row,col}, mv);
+      selected=null; legalMoves=[];
+    } else if (board[row][col] && board[row][col].color===turn) {
+      selected={row,col}; legalMoves=getLegalMoves(row,col);
+    } else {
+      selected=null; legalMoves=[];
+    }
+  } else {
+    if (board[row][col] && board[row][col].color===turn) {
+      selected={row,col}; legalMoves=getLegalMoves(row,col);
+    }
+  }
+  render();
+});
+
+// ─── HELPERS ─────────────────────────────────────────────────────────────────
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x+r, y);
+  ctx.lineTo(x+w-r, y); ctx.arcTo(x+w,y,  x+w,y+r,  r);
+  ctx.lineTo(x+w, y+h-r); ctx.arcTo(x+w,y+h,x+w-r,y+h,r);
+  ctx.lineTo(x+r, y+h); ctx.arcTo(x,y+h,  x,y+h-r,  r);
+  ctx.lineTo(x, y+r); ctx.arcTo(x,y,    x+r,y,    r);
+  ctx.closePath();
+}
+
+// ─── MAIN ────────────────────────────────────────────────────────────────────
+async function main() {
+  initBoard();
+  await loadSprite();
+  render();
+}
+main();
+</script>
+</body>
+</html>
